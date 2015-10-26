@@ -2,13 +2,7 @@ use std::str::FromStr;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
-
-#[derive(Debug, Default, PartialEq)]
-pub struct Vec3f {
-    x: f32,
-    y: f32,
-    z: f32,
-}
+use math::Vec3f;
 
 #[derive(Debug, Default, PartialEq)]
 pub struct Face {

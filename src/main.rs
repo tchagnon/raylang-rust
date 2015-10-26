@@ -1,5 +1,6 @@
 use std::env;
 
+mod math;
 mod mesh;
 
 fn main() {
