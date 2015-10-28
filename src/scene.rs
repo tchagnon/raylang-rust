@@ -16,7 +16,10 @@ pub struct Scene {
 
 impl Scene {
     pub fn read(path: &Path) -> Scene {
-        let mut toml_file = File::open(path).unwrap();
+        let mut toml_file = match File::open(path) {
+            Ok(file) => file,
+            Err(why) => panic!("Could not open \"{:?}\": {}", path, why),
+        };
         let mut toml = String::new();
         toml_file.read_to_string(&mut toml).unwrap();
 

@@ -12,6 +12,7 @@ mod mesh;
 mod scene;
 
 use scene::Scene;
+use mesh::Mesh;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -24,7 +25,7 @@ fn main() {
     let scene = Scene::read(path);
     println!("{:?}", scene);
 
-    let mesh = mesh::read_smf(&scene.mesh);
+    let mesh = Mesh::read(Path::new(&scene.mesh));
     println!("vertices: {} faces: {}", mesh.vertices.len(), mesh.faces.len());
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
