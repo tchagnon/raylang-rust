@@ -1,3 +1,5 @@
+//! Mesh module for reading and representing mesh objects
+
 use std::str::FromStr;
 use std::fs::File;
 use std::io::BufReader;
