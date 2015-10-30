@@ -6,12 +6,15 @@ use std::path::Path;
 use std::io::prelude::*;
 use toml::{Parser, Decoder, Value};
 
+use color::Color;
+
 #[derive(Debug, RustcDecodable, Default, PartialEq)]
 pub struct Scene {
     pub image: String,
     pub width: u32,
     pub height: u32,
     pub mesh: String,
+    pub background: Color,
 }
 
 impl Scene {

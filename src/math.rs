@@ -8,10 +8,21 @@ pub fn to_radians(x: f32) -> f32 {
     x * consts::PI / 180.0
 }
 
+pub trait Clamp {
+    fn clamp(self: Self, lower: Self, upper: Self) -> Self;
+}
+
+impl Clamp for f32 {
+    fn clamp(self, lower: f32, upper: f32) -> f32 {
+        self.min(upper).max(lower)
+    }
+}
+
+
 /*
  * 3x1 real vector type
  */
-#[derive(Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Vec3f {
     pub x: f32,
     pub y: f32,

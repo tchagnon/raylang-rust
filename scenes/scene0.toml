@@ -3,5 +3,5 @@
 image       = "scene0.png"
 width       = 512
 height      = 512
-background  = "black"
+background  = "CornflowerBlue"
 mesh        = "models/teapot.smf"

@@ -3,10 +3,10 @@ extern crate toml;
 extern crate rustc_serialize;
 
 use std::env;
-use std::fs::File;
 use std::path::Path;
-use image::{ImageBuffer, Rgb};
+use image::ImageBuffer;
 
+mod color;
 mod math;
 mod mesh;
 mod scene;
@@ -30,7 +30,7 @@ fn main() {
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        *pixel = Rgb([0xffu8, 0x00u8, 0xffu8]);
+        *pixel = scene.background.scale(0.75).rgb();
     }
 
     let fout = Path::new(&scene.image);
