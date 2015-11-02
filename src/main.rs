@@ -11,8 +11,9 @@ mod math;
 mod mesh;
 mod scene;
 
-use scene::Scene;
+use color::Color;
 use mesh::Mesh;
+use scene::Scene;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -30,7 +31,8 @@ fn main() {
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        *pixel = scene.background.scale(0.75).rgb();
+        let bg = scene.background.vec3f.scale(0.75);
+        *pixel = Color::new(bg).rgb();
     }
 
     let fout = Path::new(&scene.image);

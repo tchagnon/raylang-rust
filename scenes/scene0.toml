@@ -3,5 +3,32 @@
 image       = "scene0.png"
 width       = 512
 height      = 512
-background  = "CornflowerBlue"
+background  = "black"
 mesh        = "models/teapot.smf"
+
+[camera]
+distance    = 3.0
+fovAngle    = 56.0
+location    = [0.0, 0.0, 3.0]
+direction   = [0.0, 0.0, -1.0]
+up          = [0.0, 1.0, 0.0]
+
+[objects]
+type = "Group"
+
+[[objects.items]]
+type = "Transform"
+transformation = {type = "translate", vector = [-1, 0, 0]}
+child = {type = "Primitive", sphere = 0.4}
+
+[[objects.items]]
+type = "Transform"
+transformation = {type = "translate", vector = [1, 0, 0]}
+child = {type = "Primitive", sphere = 0.4}
+
+[[objects.items]]
+#type = "Transform"
+#transformation = {type = "rotate", degrees = -90, axis = [0, 1, 0]}
+#child = {type = "Mesh", mesh = "models/bound-bunny_1k.smf"}
+type = "Mesh"
+mesh = "models/icos.smf"

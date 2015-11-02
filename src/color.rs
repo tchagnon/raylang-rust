@@ -7,34 +7,40 @@ use std::convert::AsRef;
 use math::Vec3f;
 use math::Clamp;
 
-pub type Color = Vec3f;
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Color {
+    pub vec3f: Vec3f
+}
 
 impl Color {
+    pub fn new(v3f: Vec3f) -> Color {
+        Color { vec3f: v3f }
+    }
     pub fn rgb(&self) -> Rgb<u8> {
-        let r = (self.x * 255.0).round().clamp(0.0, 255.0) as u8;
-        let g = (self.y * 255.0).round().clamp(0.0, 255.0) as u8;
-        let b = (self.z * 255.0).round().clamp(0.0, 255.0) as u8;
+        let r = (self.vec3f.x * 255.0).round().clamp(0.0, 255.0) as u8;
+        let g = (self.vec3f.y * 255.0).round().clamp(0.0, 255.0) as u8;
+        let b = (self.vec3f.z * 255.0).round().clamp(0.0, 255.0) as u8;
         Rgb { data: [r, g, b] }
     }
 }
 
-pub static BLACK            : Color = Color { x: 0.0, y: 0.0, z: 0.0 };
-pub static WHITE            : Color = Color { x: 1.0, y: 1.0, z: 1.0 };
-pub static RED              : Color = Color { x: 1.0, y: 0.0, z: 0.0 };
-pub static GREEN            : Color = Color { x: 0.0, y: 1.0, z: 0.0 };
-pub static BLUE             : Color = Color { x: 0.0, y: 0.0, z: 1.0 };
-pub static CYAN             : Color = Color { x: 0.0, y: 1.0, z: 1.0 };
-pub static MAGENTA          : Color = Color { x: 1.0, y: 0.0, z: 1.0 };
-pub static YELLOW           : Color = Color { x: 1.0, y: 1.0, z: 0.0 };
-pub static AZURE            : Color = Color { x: 0.0, y: 0.5, z: 1.0 };
-pub static ORANGE           : Color = Color { x: 1.0, y: 0.5, z: 0.0 };
-pub static GRAY             : Color = Color { x: 0.5, y: 0.5, z: 0.5 };
-pub static BRIGHTORANGE     : Color = Color { x: 1.0, y: 0.8, z: 0.0 };
-pub static DARKGREEN        : Color = Color { x: 0.0, y: 0.5, z: 0.0 };
-pub static SKYBLUE          : Color = Color { x: 0.530, y: 0.808, z: 0.922 };
-pub static BROWN            : Color = Color { x: 0.596, y: 0.463, z: 0.329 };
-pub static DARKBROWN        : Color = Color { x: 0.396, y: 0.263, z: 0.129 };
-pub static CORNFLOWERBLUE   : Color = Color { x: 0.392, y: 0.584, z: 0.929 };
+pub static BLACK            : Color = Color { vec3f: Vec3f { x: 0.0, y: 0.0, z: 0.0 }};
+pub static WHITE            : Color = Color { vec3f: Vec3f { x: 1.0, y: 1.0, z: 1.0 }};
+pub static RED              : Color = Color { vec3f: Vec3f { x: 1.0, y: 0.0, z: 0.0 }};
+pub static GREEN            : Color = Color { vec3f: Vec3f { x: 0.0, y: 1.0, z: 0.0 }};
+pub static BLUE             : Color = Color { vec3f: Vec3f { x: 0.0, y: 0.0, z: 1.0 }};
+pub static CYAN             : Color = Color { vec3f: Vec3f { x: 0.0, y: 1.0, z: 1.0 }};
+pub static MAGENTA          : Color = Color { vec3f: Vec3f { x: 1.0, y: 0.0, z: 1.0 }};
+pub static YELLOW           : Color = Color { vec3f: Vec3f { x: 1.0, y: 1.0, z: 0.0 }};
+pub static AZURE            : Color = Color { vec3f: Vec3f { x: 0.0, y: 0.5, z: 1.0 }};
+pub static ORANGE           : Color = Color { vec3f: Vec3f { x: 1.0, y: 0.5, z: 0.0 }};
+pub static GRAY             : Color = Color { vec3f: Vec3f { x: 0.5, y: 0.5, z: 0.5 }};
+pub static BRIGHTORANGE     : Color = Color { vec3f: Vec3f { x: 1.0, y: 0.8, z: 0.0 }};
+pub static DARKGREEN        : Color = Color { vec3f: Vec3f { x: 0.0, y: 0.5, z: 0.0 }};
+pub static SKYBLUE          : Color = Color { vec3f: Vec3f { x: 0.530, y: 0.808, z: 0.922 }};
+pub static BROWN            : Color = Color { vec3f: Vec3f { x: 0.596, y: 0.463, z: 0.329 }};
+pub static DARKBROWN        : Color = Color { vec3f: Vec3f { x: 0.396, y: 0.263, z: 0.129 }};
+pub static CORNFLOWERBLUE   : Color = Color { vec3f: Vec3f { x: 0.392, y: 0.584, z: 0.929 }};
 
 impl Decodable for Color {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {

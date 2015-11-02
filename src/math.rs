@@ -2,6 +2,8 @@
 
 use std::f32::consts;
 use std::ops::{Add, Sub};
+use rustc_serialize::Decoder;
+use rustc_serialize::Decodable;
 
 /// Degrees to radians
 pub fn to_radians(x: f32) -> f32 {
@@ -17,7 +19,6 @@ impl Clamp for f32 {
         self.min(upper).max(lower)
     }
 }
-
 
 /*
  * 3x1 real vector type
@@ -98,6 +99,18 @@ impl<'a> Sub for &'a Vec3f {
             y: self.y - rhs.y,
             z: self.z - rhs.z,
         }
+    }
+}
+
+impl Decodable for Vec3f {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        d.read_seq(|d, len| {
+            Ok(Vec3f {
+                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
+                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
+                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
+            })
+        })
     }
 }
 
