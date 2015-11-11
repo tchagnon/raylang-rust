@@ -206,6 +206,47 @@ impl Decodable for Vec4f {
     }
 }
 
+/**
+ * 4x4 Row Matrix
+ */
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Mat4f {
+    pub r1: Vec4f,
+    pub r2: Vec4f,
+    pub r3: Vec4f,
+    pub r4: Vec4f,
+}
+
+impl Mat4f {
+    pub fn new(r1: Vec4f, r2: Vec4f, r3: Vec4f, r4: Vec4f) -> Mat4f {
+        Mat4f { r1: r1, r2: r2, r3: r3, r4: r4 }
+    }
+
+    pub fn mv_multiply(&self, v: &Vec4f) -> Vec4f {
+        Vec4f::new(self.r1.dot(v), self.r2.dot(v), self.r3.dot(v), self.r4.dot(v))
+    }
+
+    pub fn transpose(&self) -> Mat4f {
+        Mat4f::new(
+            Vec4f::new(self.r1.x, self.r2.x, self.r3.x, self.r4.x),
+            Vec4f::new(self.r1.y, self.r2.y, self.r3.y, self.r4.y),
+            Vec4f::new(self.r1.z, self.r2.z, self.r3.z, self.r4.z),
+            Vec4f::new(self.r1.w, self.r2.w, self.r3.w, self.r4.w)
+        )
+    }
+
+    pub fn mm_multiply(&self, rhs: &Mat4f) -> Mat4f {
+        let t = rhs.transpose();
+        Mat4f::new(
+            self.mv_multiply(&t.r1),
+            self.mv_multiply(&t.r2),
+            self.mv_multiply(&t.r3),
+            self.mv_multiply(&t.r4),
+        ).transpose()
+    }
+}
+
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -247,5 +288,27 @@ mod test {
         assert_eq!(u.magnitude_squared(), 30.0);
         assert_eq!(u.magnitude(), 5.477225575);
         assert_eq!(u.norm(), vec4f(0.1825741858, 0.3651483717, 0.5477225575, 0.7302967433));
+    }
+
+    #[test]
+    fn test_mat4f() {
+        let mat4f = Mat4f::new;
+        let vec4f = Vec4f::new;
+        let A = mat4f(
+            vec4f(1.0, 2.0, 3.0, 4.0),
+            vec4f(5.0, 6.0, 7.0, 8.0),
+            vec4f(9.0, 10.0, 11.0, 12.0),
+            vec4f(13.0, 14.0, 15.0, 16.0));
+        let B = mat4f(
+            vec4f(17.0, 18.0, 19.0, 20.0),
+            vec4f(21.0, 22.0, 23.0, 24.0),
+            vec4f(25.0, 26.0, 27.0, 28.0),
+            vec4f(29.0, 30.0, 31.0, 23.0));
+        let C = mat4f(
+            vec4f(250.0, 260.0, 270.0, 244.0),
+            vec4f(618.0, 644.0, 670.0, 624.0),
+            vec4f(986.0, 1028.0, 1070.0, 1004.0),
+            vec4f(1354.0, 1412.0, 1470.0, 1384.0));
+        assert_eq!(A.mm_multiply(&B), C);
     }
 }
