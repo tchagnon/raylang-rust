@@ -14,8 +14,8 @@ impl Decodable for Primitive {
             Ok(try!(d.read_str()))
         })).as_ref() {
             "Sphere" => {
-                let radius = try!(d.read_struct_field("radius", 1, |d| { d.read_f32() }));
-                let center = try!(d.read_struct_field("center", 1, |d| { Vec3f::decode(d) }));
+                let radius = try!(d.read_struct_field("radius", 0, |d| { d.read_f32() }));
+                let center = try!(d.read_struct_field("center", 0, |d| { Vec3f::decode(d) }));
                 Ok(Primitive::Sphere { radius: radius, center: center })
             },
             t@_ => Err(d.error(&format!("unknown primitive {}", t))),

@@ -55,8 +55,7 @@ pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
     Primitive(Primitive),
-    // TODO implement
-    // Transform(Mat4f, ObjectTree),
+    Transform { child: Box<ObjectTree> },
 }
 
 impl Default for ObjectTree {
@@ -70,18 +69,18 @@ impl Decodable for ObjectTree {
         match try!(d.read_struct_field("type", 0, |d| {
             Ok(try!(d.read_str()))
         })).as_ref() {
-            "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 1, |d| {
-                Ok(try!(d.read_to_vec(|d| {
-                    Ok(try!(ObjectTree::decode(d)))
-                })))
+            "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 0, |d| {
+                d.read_to_vec(|d| { ObjectTree::decode(d) })
             })))),
-            "Mesh" => Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 1, |d| {
+            "Mesh" => Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
                 let model_path = try!(d.read_str());
                 Ok(Mesh::read(Path::new(&model_path)))
             })))),
             "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
-            // TODO implement
-            "Transform" => Ok(ObjectTree::Group(vec![])),
+            "Transform" => {
+                let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));
+                Ok(ObjectTree::Transform { child: Box::new(child) })
+            },
             t@_ => Err(d.error(&format!("unknown object type {}", t))),
         }
     }
