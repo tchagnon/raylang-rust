@@ -24,7 +24,7 @@ transformation = {type = "translate", vector = [-1, 0, 0]}
   type = "Primitive"
   primitive = "Sphere"
   radius = 0.4
-  center = [0.1, 0.2, 0.3]
+  center = [0.0, 0.0, 0.0]
 
 [[objects.items]]
 type = "Transform"

@@ -20,7 +20,7 @@ impl Clamp for f32 {
     }
 }
 
-/*
+/**
  * 3x1 real vector type
  */
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -68,7 +68,7 @@ impl Vec3f {
     }
 
     pub fn magnitude_squared(&self) -> f32 {
-        self.x * self.x + self.y * self.y + self.z * self.z
+        self.dot(self)
     }
 
     pub fn magnitude(&self) -> f32 {
@@ -114,6 +114,98 @@ impl Decodable for Vec3f {
     }
 }
 
+/**
+ * 4x1 real vector type
+ */
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Vec4f {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+    pub w: f32,
+}
+
+impl Vec4f {
+    pub fn new(x: f32, y: f32, z: f32, w: f32) -> Vec4f {
+        Vec4f {x: x, y: y, z: z, w: w}
+    }
+
+    pub fn zero() -> Vec4f {
+        Vec4f::new(0.0, 0.0, 0.0, 0.0)
+    }
+
+    pub fn dot(&self, rhs: &Vec4f) -> f32 {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w
+    }
+
+    pub fn point_mul(&self, rhs: &Vec4f) -> Vec4f {
+        Vec4f {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+            z: self.z * rhs.z,
+            w: self.w * rhs.w,
+        }
+    }
+
+    pub fn scale(&self, rhs: f32) -> Vec4f {
+        Vec4f {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+            w: self.w * rhs,
+        }
+    }
+
+    pub fn magnitude_squared(&self) -> f32 {
+        self.dot(self)
+    }
+
+    pub fn magnitude(&self) -> f32 {
+        f32::sqrt(self.magnitude_squared())
+    }
+
+    pub fn norm(&self) -> Vec4f {
+        self.scale(1.0 / self.magnitude())
+    }
+}
+
+impl<'a> Add for &'a Vec4f {
+    type Output = Vec4f;
+    fn add(self, rhs: &'a Vec4f) -> Vec4f {
+        Vec4f {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+            z: self.z + rhs.z,
+            w: self.w + rhs.w,
+        }
+    }
+}
+
+impl<'a> Sub for &'a Vec4f {
+    type Output = Vec4f;
+    fn sub(self, rhs: &'a Vec4f) -> Vec4f {
+        Vec4f {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+            z: self.z - rhs.z,
+            w: self.w - rhs.w,
+        }
+    }
+}
+
+impl Decodable for Vec4f {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        d.read_seq(|d, len| {
+            Ok(Vec4f {
+                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
+                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
+                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
+                w: try!(d.read_seq_elt(3, |d| Decodable::decode(d))),
+            })
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -139,5 +231,21 @@ mod test {
         assert_eq!(u.magnitude_squared(), 14.0);
         assert_eq!(u.magnitude(), 3.7416575);
         assert_eq!(u.norm(), vec3f(0.26726124, 0.5345225, 0.8017837));
+    }
+
+    #[test]
+    fn test_vec4f() {
+        let vec4f = Vec4f::new;
+        let u = vec4f(1.0, 2.0, 3.0, 4.0);
+        let v = vec4f(5.0, 6.0, 7.0, 8.0);
+        assert_eq!(&u + &v, vec4f(6.0, 8.0, 10.0, 12.0));
+        assert_eq!(&u - &v, vec4f(-4.0, -4.0, -4.0, -4.0));
+        assert_eq!(Vec4f::zero(), vec4f(0.0, 0.0, 0.0, 0.0));
+        assert_eq!(u.point_mul(&v), vec4f(5.0, 12.0, 21.0, 32.0));
+        assert_eq!(u.dot(&v), 70.0);
+        assert_eq!(u.scale(3.0), vec4f(3.0, 6.0, 9.0, 12.0));
+        assert_eq!(u.magnitude_squared(), 30.0);
+        assert_eq!(u.magnitude(), 5.477225575);
+        assert_eq!(u.norm(), vec4f(0.1825741858, 0.3651483717, 0.5477225575, 0.7302967433));
     }
 }

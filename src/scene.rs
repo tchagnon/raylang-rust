@@ -55,7 +55,9 @@ pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
     Primitive(Primitive),
-    Transform { child: Box<ObjectTree> },
+    Transform {
+        child: Box<ObjectTree>,
+    },
 }
 
 impl Default for ObjectTree {
