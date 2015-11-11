@@ -19,7 +19,12 @@ type = "Group"
 [[objects.items]]
 type = "Transform"
 transformation = {type = "translate", vector = [-1, 0, 0]}
-child = {type = "Primitive", sphere = 0.4}
+
+[[objects.items]]
+type = "Primitive"
+primitive = "Sphere"
+radius = 0.4
+center = [0.1, 0.2, 0.3]
 
 [[objects.items]]
 type = "Transform"

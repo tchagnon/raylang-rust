@@ -13,6 +13,7 @@ use toml::Decoder as TomlDecoder;
 use color::Color;
 use math::Vec3f;
 use mesh::Mesh;
+use primitive::Primitive;
 
 #[derive(Debug, RustcDecodable, Default, PartialEq)]
 pub struct Scene {
@@ -53,8 +54,8 @@ pub struct Camera {
 pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
+    Primitive(Primitive),
     // TODO implement
-    // Primitive(Primitive),
     // Transform(Mat4f, ObjectTree),
 }
 
@@ -78,9 +79,9 @@ impl Decodable for ObjectTree {
                 let model_path = try!(d.read_str());
                 Ok(Mesh::read(Path::new(&model_path)))
             })))),
+            "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
             // TODO implement
             "Transform" => Ok(ObjectTree::Group(vec![])),
-            "Primitive" => Ok(ObjectTree::Group(vec![])),
             t@_ => Err(d.error(&format!("unknown object type {}", t))),
         }
     }

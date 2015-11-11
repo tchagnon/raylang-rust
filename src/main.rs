@@ -9,6 +9,7 @@ use image::ImageBuffer;
 mod color;
 mod math;
 mod mesh;
+mod primitive;
 mod scene;
 
 use color::Color;
