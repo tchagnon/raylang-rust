@@ -104,7 +104,7 @@ impl<'a> Sub for &'a Vec3f {
 
 impl Decodable for Vec3f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, len| {
+        d.read_seq(|d, _len| {
             Ok(Vec3f {
                 x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
                 y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
@@ -195,7 +195,7 @@ impl<'a> Sub for &'a Vec4f {
 
 impl Decodable for Vec4f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, len| {
+        d.read_seq(|d, _len| {
             Ok(Vec4f {
                 x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
                 y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
@@ -220,6 +220,15 @@ pub struct Mat4f {
 impl Mat4f {
     pub fn new(r1: Vec4f, r2: Vec4f, r3: Vec4f, r4: Vec4f) -> Mat4f {
         Mat4f { r1: r1, r2: r2, r3: r3, r4: r4 }
+    }
+
+    pub fn identity() -> Mat4f {
+        Mat4f::new(
+            Vec4f::new(1.0, 0.0, 0.0, 0.0),
+            Vec4f::new(0.0, 1.0, 0.0, 0.0),
+            Vec4f::new(0.0, 0.0, 1.0, 0.0),
+            Vec4f::new(0.0, 0.0, 0.0, 1.0),
+        )
     }
 
     // Construct a translation matrix
@@ -277,6 +286,12 @@ impl Mat4f {
             self.mv_multiply(&t.r3),
             self.mv_multiply(&t.r4),
         ).transpose()
+    }
+
+    pub fn transform_point(&self, point: &Vec3f) -> Vec3f {
+        let p = Vec4f::new(point.x, point.y, point.z, 1.0);
+        let Vec4f { x, y, z, w } = self.mv_multiply(&p);
+        Vec3f::new(x/w, y/w, z/w)
     }
 }
 

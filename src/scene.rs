@@ -15,12 +15,11 @@ use math::{Vec3f, Mat4f};
 use mesh::Mesh;
 use primitive::Primitive;
 
-#[derive(Debug, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
 pub struct Scene {
     pub image: String,
     pub width: u32,
     pub height: u32,
-    pub mesh: String,
     pub background: Color,
     pub camera: Camera,
     pub objects: ObjectTree,
@@ -39,18 +38,28 @@ impl Scene {
         let mut decoder = TomlDecoder::new(Value::Table(scene));
         Scene::decode(&mut decoder).unwrap()
     }
+
+    // Precompute, flatten and transform objects in the scene
+    pub fn prepare(&self) -> Scene {
+        let new_objects = self.objects.prepare(&Mat4f::identity());
+        Scene {
+            objects: new_objects,
+            .. self.clone()
+        }
+    }
+
 }
 
-#[derive(Debug, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
 pub struct Camera {
     pub distance: f32,
-    pub fovAngle: f32,
+    pub fov_angle: f32,
     pub location: Vec3f,
     pub direction: Vec3f,
     pub up: Vec3f,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
@@ -59,6 +68,22 @@ pub enum ObjectTree {
         child: Box<ObjectTree>,
         transform: Mat4f,
     },
+}
+
+impl ObjectTree {
+    pub fn prepare(&self, t: &Mat4f) -> ObjectTree {
+        match *self {
+            ObjectTree::Group(ref objs) => {
+                ObjectTree::Group(objs.into_iter().map({ |o| o.prepare(t) }).collect())
+            },
+            ObjectTree::Transform { ref child, ref transform } => {
+                let new_t = t.mm_multiply(transform);
+                child.prepare(&new_t)
+            },
+            ObjectTree::Primitive(ref p) => ObjectTree::Primitive(p.transform(t)),
+            ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t)),
+        }
+    }
 }
 
 impl Default for ObjectTree {

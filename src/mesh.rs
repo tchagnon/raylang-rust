@@ -5,16 +5,16 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::Path;
-use math::Vec3f;
+use math::{Vec3f, Mat4f};
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
     a: i32,
     b: i32,
     c: i32,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Mesh {
     pub vertices: Vec<Vec3f>,
     pub faces: Vec<Face>,
@@ -52,5 +52,12 @@ impl Mesh {
             .filter_map(|x| i32::from_str(x).ok())
             .collect();
         Face { a: v[0], b: v[1], c: v[2] }
+    }
+
+    pub fn transform(&self, t: &Mat4f) -> Self {
+        let vs: Vec<_> = self.vertices.clone().into_iter()
+            .map(|v| t.transform_point(&v))
+            .collect();
+        Mesh { vertices: vs, faces: self.faces.clone() }
     }
 }

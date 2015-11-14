@@ -13,7 +13,6 @@ mod primitive;
 mod scene;
 
 use color::Color;
-use mesh::Mesh;
 use scene::Scene;
 
 fn main() {
@@ -25,13 +24,12 @@ fn main() {
 
     let path = Path::new(&args[1]);
     let scene = Scene::read(path);
-    println!("{:?}", scene);
-
-    let mesh = Mesh::read(Path::new(&scene.mesh));
-    println!("vertices: {} faces: {}", mesh.vertices.len(), mesh.faces.len());
+    println!("Raw Scene: {:?}", scene);
+    let scene = scene.prepare();
+    println!("Prepared Scene: {:?}", scene);
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+    for (_x, _y, pixel) in imgbuf.enumerate_pixels_mut() {
         let bg = scene.background.vec3f.scale(0.75);
         *pixel = Color::new(bg).rgb();
     }

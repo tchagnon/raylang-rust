@@ -1,11 +1,24 @@
 use rustc_serialize::Decoder;
 use rustc_serialize::Decodable;
 
-use math::Vec3f;
+use math::{Vec3f, Mat4f};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Primitive {
     Sphere { radius: f32, center: Vec3f },
+}
+
+impl Primitive {
+    pub fn transform(&self, t: &Mat4f) -> Self {
+        match *self {
+            Primitive::Sphere { radius: r, center: c } => {
+                Primitive::Sphere {
+                    radius: r * t.r1.x,
+                    center: t.transform_point(&c),
+                }
+            },
+        }
+    }
 }
 
 impl Decodable for Primitive {
