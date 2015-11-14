@@ -11,7 +11,7 @@ use toml::{Parser, Value};
 use toml::Decoder as TomlDecoder;
 
 use color::Color;
-use math::Vec3f;
+use math::{Vec3f, Mat4f};
 use mesh::Mesh;
 use primitive::Primitive;
 
@@ -57,6 +57,7 @@ pub enum ObjectTree {
     Primitive(Primitive),
     Transform {
         child: Box<ObjectTree>,
+        transform: Mat4f,
     },
 }
 
@@ -81,7 +82,8 @@ impl Decodable for ObjectTree {
             "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
             "Transform" => {
                 let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));
-                Ok(ObjectTree::Transform { child: Box::new(child) })
+                let xform = try!(d.read_struct_field("transform", 0, |d| { Mat4f::decode(d) }));
+                Ok(ObjectTree::Transform { child: Box::new(child), transform: xform })
             },
             t@_ => Err(d.error(&format!("unknown object type {}", t))),
         }

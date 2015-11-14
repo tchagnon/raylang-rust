@@ -18,7 +18,7 @@ type = "Group"
 
 [[objects.items]]
 type = "Transform"
-transformation = {type = "translate", vector = [-1, 0, 0]}
+transform = {type = "Translate", vector = [-1.0, 0.0, 0.0]}
 
   [objects.items.child]
   type = "Primitive"
@@ -28,7 +28,7 @@ transformation = {type = "translate", vector = [-1, 0, 0]}
 
 [[objects.items]]
 type = "Transform"
-transformation = {type = "translate", vector = [1, 0, 0]}
+transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
 
   [objects.items.child]
   type = "Primitive"
@@ -38,6 +38,6 @@ transformation = {type = "translate", vector = [1, 0, 0]}
 
 [[objects.items]]
 type = "Transform"
-transformation = {type = "rotate", degrees = -90, axis = [0, 1, 0]}
+transform = {type = "Rotate", degrees = -90.0, axis = [0.0, 1.0, 0.0]}
 #child = {type = "Mesh", mesh = "models/bound-bunny_1k.smf"}
 child = {type = "Mesh", mesh = "models/icos.smf"}

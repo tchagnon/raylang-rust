@@ -222,6 +222,40 @@ impl Mat4f {
         Mat4f { r1: r1, r2: r2, r3: r3, r4: r4 }
     }
 
+    // Construct a translation matrix
+    pub fn translate(v: Vec3f) -> Mat4f {
+        Mat4f::new(
+            Vec4f::new(1.0, 0.0, 0.0, v.x),
+            Vec4f::new(0.0, 1.0, 0.0, v.y),
+            Vec4f::new(0.0, 0.0, 1.0, v.z),
+            Vec4f::new(0.0, 0.0, 0.0, 1.0),
+        )
+    }
+
+    // Construct a scaling matrix
+    pub fn scale(v: Vec3f) -> Mat4f {
+        Mat4f::new(
+            Vec4f::new(v.x, 0.0, 0.0, 0.0),
+            Vec4f::new(0.0, v.y, 0.0, 0.0),
+            Vec4f::new(0.0, 0.0, v.z, 0.0),
+            Vec4f::new(0.0, 0.0, 0.0, 1.0),
+        )
+    }
+
+    // Construct a rotation matrix
+    pub fn rotate(v: Vec3f, angle: f32) -> Mat4f {
+        let c = to_radians(angle).cos();
+        let s = to_radians(angle).sin();
+        let (x, y, z) = (v.x, v.y, v.z);
+        let (x2, y2, z2) = (x.powi(2), y.powi(2), z.powi(2));
+        Mat4f::new(
+            Vec4f::new(x2+(1.0-x2)*c,     x*y*(1.0-c)-z*s,  x*z*(1.0-c)+y*s,  0.0),
+            Vec4f::new(x*y*(1.0-c)+z*s,   y2+(1.0-y2)*c,    y*z*(1.0-c)-x*s,  0.0),
+            Vec4f::new(x*z*(1.0-c)-y*s,   y*z*(1.0-c)+x*s,  z2+(1.0-z2)*c,    0.0),
+            Vec4f::new(0.0, 0.0, 0.0, 1.0),
+        )
+    }
+
     pub fn mv_multiply(&self, v: &Vec4f) -> Vec4f {
         Vec4f::new(self.r1.dot(v), self.r2.dot(v), self.r3.dot(v), self.r4.dot(v))
     }
@@ -246,6 +280,28 @@ impl Mat4f {
     }
 }
 
+impl Decodable for Mat4f {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
+        match try!(d.read_struct_field("type", 0, |d| {
+            Ok(try!(d.read_str()))
+        })).as_ref() {
+            "Translate" => {
+                let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
+                Ok(Mat4f::translate(vec))
+            },
+            "Rotate" => {
+                let deg = try!(d.read_struct_field("degrees", 0, |d| { d.read_f32() }));
+                let axis = try!(d.read_struct_field("axis", 0, |d| { Vec3f::decode(d) }));
+                Ok(Mat4f::rotate(axis, deg))
+            },
+            "Scale" => {
+                let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
+                Ok(Mat4f::scale(vec))
+            },
+            t@_ => Err(d.error(&format!("unknown transform {}", t))),
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
