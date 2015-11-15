@@ -6,6 +6,7 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::Path;
 use math::{Vec3f, Mat4f};
+use ray_tracer::Ray;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
@@ -56,8 +57,12 @@ impl Mesh {
 
     pub fn transform(&self, t: &Mat4f) -> Self {
         let vs: Vec<_> = self.vertices.clone().into_iter()
-            .map(|v| t.transform_point(&v))
+            .map(|v| t.transform_point(v))
             .collect();
         Mesh { vertices: vs, faces: self.faces.clone() }
+    }
+
+    pub fn intersect(&self, ray: Ray) -> Vec<f32> {
+        vec![]
     }
 }

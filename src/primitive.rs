@@ -2,6 +2,7 @@ use rustc_serialize::Decoder;
 use rustc_serialize::Decodable;
 
 use math::{Vec3f, Mat4f};
+use ray_tracer::Ray;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Primitive {
@@ -14,10 +15,14 @@ impl Primitive {
             Primitive::Sphere { radius: r, center: c } => {
                 Primitive::Sphere {
                     radius: r * t.r1.x,
-                    center: t.transform_point(&c),
+                    center: t.transform_point(c),
                 }
             },
         }
+    }
+
+    pub fn intersect(&self, ray: Ray) -> Vec<f32> {
+        vec![]
     }
 }
 

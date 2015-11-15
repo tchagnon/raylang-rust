@@ -14,6 +14,7 @@ use color::Color;
 use math::{Vec3f, Mat4f};
 use mesh::Mesh;
 use primitive::Primitive;
+use ray_tracer::Ray;
 
 #[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
 pub struct Scene {
@@ -82,6 +83,19 @@ impl ObjectTree {
             },
             ObjectTree::Primitive(ref p) => ObjectTree::Primitive(p.transform(t)),
             ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t)),
+        }
+    }
+
+    pub fn intersect(&self, ray: Ray) -> Vec<f32> {
+        match *self {
+            ObjectTree::Group(ref objs) => {
+                objs.into_iter().flat_map({ |o| o.intersect(ray).into_iter() }).collect()
+            },
+            ObjectTree::Transform { ref child, ref transform } => {
+                child.intersect(ray.transform(transform))
+            },
+            ObjectTree::Primitive(ref p) => p.intersect(ray),
+            ObjectTree::Mesh(ref m) => m.intersect(ray),
         }
     }
 }

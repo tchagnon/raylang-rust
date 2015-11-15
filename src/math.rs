@@ -39,11 +39,11 @@ impl Vec3f {
         Vec3f::new(0.0, 0.0, 0.0)
     }
 
-    pub fn dot(&self, rhs: &Vec3f) -> f32 {
+    pub fn dot(&self, rhs: Vec3f) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
-    pub fn cross(&self, rhs: &Vec3f) -> Vec3f {
+    pub fn cross(&self, rhs: Vec3f) -> Vec3f {
         Vec3f {
             x: self.y * rhs.z - self.z * rhs.y,
             y: self.z * rhs.x - self.x * rhs.z,
@@ -51,7 +51,7 @@ impl Vec3f {
         }
     }
 
-    pub fn point_mul(&self, rhs: &Vec3f) -> Vec3f {
+    pub fn point_mul(&self, rhs: Vec3f) -> Vec3f {
         Vec3f {
             x: self.x * rhs.x,
             y: self.y * rhs.y,
@@ -68,7 +68,7 @@ impl Vec3f {
     }
 
     pub fn magnitude_squared(&self) -> f32 {
-        self.dot(self)
+        self.dot(*self)
     }
 
     pub fn magnitude(&self) -> f32 {
@@ -80,9 +80,9 @@ impl Vec3f {
     }
 }
 
-impl<'a> Add for &'a Vec3f {
+impl Add for Vec3f {
     type Output = Vec3f;
-    fn add(self, rhs: &'a Vec3f) -> Vec3f {
+    fn add(self, rhs: Vec3f) -> Vec3f {
         Vec3f {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
@@ -91,9 +91,9 @@ impl<'a> Add for &'a Vec3f {
     }
 }
 
-impl<'a> Sub for &'a Vec3f {
+impl Sub for Vec3f {
     type Output = Vec3f;
-    fn sub(self, rhs: &'a Vec3f) -> Vec3f {
+    fn sub(self, rhs: Vec3f) -> Vec3f {
         Vec3f {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
@@ -134,11 +134,15 @@ impl Vec4f {
         Vec4f::new(0.0, 0.0, 0.0, 0.0)
     }
 
-    pub fn dot(&self, rhs: &Vec4f) -> f32 {
+    pub fn dot(&self, rhs: Vec4f) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z + self.w * rhs.w
     }
 
-    pub fn point_mul(&self, rhs: &Vec4f) -> Vec4f {
+    pub fn dot3(&self, rhs: Vec3f) -> f32 {
+        self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
+    }
+
+    pub fn point_mul(&self, rhs: Vec4f) -> Vec4f {
         Vec4f {
             x: self.x * rhs.x,
             y: self.y * rhs.y,
@@ -157,7 +161,7 @@ impl Vec4f {
     }
 
     pub fn magnitude_squared(&self) -> f32 {
-        self.dot(self)
+        self.dot(*self)
     }
 
     pub fn magnitude(&self) -> f32 {
@@ -169,9 +173,9 @@ impl Vec4f {
     }
 }
 
-impl<'a> Add for &'a Vec4f {
+impl Add for Vec4f {
     type Output = Vec4f;
-    fn add(self, rhs: &'a Vec4f) -> Vec4f {
+    fn add(self, rhs: Vec4f) -> Vec4f {
         Vec4f {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
@@ -181,9 +185,9 @@ impl<'a> Add for &'a Vec4f {
     }
 }
 
-impl<'a> Sub for &'a Vec4f {
+impl Sub for Vec4f {
     type Output = Vec4f;
-    fn sub(self, rhs: &'a Vec4f) -> Vec4f {
+    fn sub(self, rhs: Vec4f) -> Vec4f {
         Vec4f {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
@@ -265,7 +269,7 @@ impl Mat4f {
         )
     }
 
-    pub fn mv_multiply(&self, v: &Vec4f) -> Vec4f {
+    pub fn mv_multiply(&self, v: Vec4f) -> Vec4f {
         Vec4f::new(self.r1.dot(v), self.r2.dot(v), self.r3.dot(v), self.r4.dot(v))
     }
 
@@ -281,17 +285,21 @@ impl Mat4f {
     pub fn mm_multiply(&self, rhs: &Mat4f) -> Mat4f {
         let t = rhs.transpose();
         Mat4f::new(
-            self.mv_multiply(&t.r1),
-            self.mv_multiply(&t.r2),
-            self.mv_multiply(&t.r3),
-            self.mv_multiply(&t.r4),
+            self.mv_multiply(t.r1),
+            self.mv_multiply(t.r2),
+            self.mv_multiply(t.r3),
+            self.mv_multiply(t.r4),
         ).transpose()
     }
 
-    pub fn transform_point(&self, point: &Vec3f) -> Vec3f {
+    pub fn transform_point(&self, point: Vec3f) -> Vec3f {
         let p = Vec4f::new(point.x, point.y, point.z, 1.0);
-        let Vec4f { x, y, z, w } = self.mv_multiply(&p);
+        let Vec4f { x, y, z, w } = self.mv_multiply(p);
         Vec3f::new(x/w, y/w, z/w)
+    }
+
+    pub fn transform_direction(&self, v: Vec3f) -> Vec3f {
+        Vec3f::new(self.r1.dot3(v), self.r2.dot3(v), self.r3.dot3(v))
     }
 }
 
@@ -333,12 +341,12 @@ mod test {
         let vec3f = Vec3f::new;
         let u = vec3f(1.0, 2.0, 3.0);
         let v = vec3f(4.0, 5.0, 6.0);
-        assert_eq!(&u + &v, vec3f(5.0, 7.0, 9.0));
-        assert_eq!(&u - &v, vec3f(-3.0, -3.0, -3.0));
+        assert_eq!(u + v, vec3f(5.0, 7.0, 9.0));
+        assert_eq!(u - v, vec3f(-3.0, -3.0, -3.0));
         assert_eq!(Vec3f::zero(), vec3f(0.0, 0.0, 0.0));
-        assert_eq!(u.cross(&v), vec3f(-3.0, 6.0, -3.0));
-        assert_eq!(u.point_mul(&v), vec3f(4.0, 10.0, 18.0));
-        assert_eq!(u.dot(&v), 32.0);
+        assert_eq!(u.cross(v), vec3f(-3.0, 6.0, -3.0));
+        assert_eq!(u.point_mul(v), vec3f(4.0, 10.0, 18.0));
+        assert_eq!(u.dot(v), 32.0);
         assert_eq!(u.scale(3.0), vec3f(3.0, 6.0, 9.0));
         assert_eq!(u.magnitude_squared(), 14.0);
         assert_eq!(u.magnitude(), 3.7416575);
@@ -350,11 +358,11 @@ mod test {
         let vec4f = Vec4f::new;
         let u = vec4f(1.0, 2.0, 3.0, 4.0);
         let v = vec4f(5.0, 6.0, 7.0, 8.0);
-        assert_eq!(&u + &v, vec4f(6.0, 8.0, 10.0, 12.0));
-        assert_eq!(&u - &v, vec4f(-4.0, -4.0, -4.0, -4.0));
+        assert_eq!(u + v, vec4f(6.0, 8.0, 10.0, 12.0));
+        assert_eq!(u - v, vec4f(-4.0, -4.0, -4.0, -4.0));
         assert_eq!(Vec4f::zero(), vec4f(0.0, 0.0, 0.0, 0.0));
-        assert_eq!(u.point_mul(&v), vec4f(5.0, 12.0, 21.0, 32.0));
-        assert_eq!(u.dot(&v), 70.0);
+        assert_eq!(u.point_mul(v), vec4f(5.0, 12.0, 21.0, 32.0));
+        assert_eq!(u.dot(v), 70.0);
         assert_eq!(u.scale(3.0), vec4f(3.0, 6.0, 9.0, 12.0));
         assert_eq!(u.magnitude_squared(), 30.0);
         assert_eq!(u.magnitude(), 5.477225575);
