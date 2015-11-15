@@ -38,5 +38,5 @@ transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
 [[objects.items]]
 type = "Transform"
 transform = {type = "Rotate", degrees = -90.0, axis = [0.0, 1.0, 0.0]}
-child = {type = "Mesh", mesh = "models/icos.smf"}
-#child = {type = "Mesh", mesh = "models/bound-bunny_1k.smf"}
+#child = {type = "Mesh", mesh = "models/icos.smf"}
+child = {type = "Mesh", mesh = "models/bound-bunny_1k.smf"}

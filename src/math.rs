@@ -326,6 +326,27 @@ impl Decodable for Mat4f {
     }
 }
 
+/**
+ * 3x3 Column Matrix
+ */
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct ColMat3f {
+    pub c1: Vec3f,
+    pub c2: Vec3f,
+    pub c3: Vec3f,
+}
+
+impl ColMat3f {
+    pub fn new(c1: Vec3f, c2: Vec3f, c3: Vec3f) -> ColMat3f {
+        ColMat3f { c1: c1, c2: c2, c3: c3 }
+    }
+
+    pub fn determinant(&self) -> f32 {
+        let (a, b, c) = (self.c1, self.c2, self.c3);
+        a.x*(b.y*c.z - c.y*b.z) + b.x*(c.y*a.z - a.y*c.z) + c.x*(a.y*b.z - b.y*a.z)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

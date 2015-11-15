@@ -5,14 +5,33 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::Path;
-use math::{Vec3f, Mat4f};
+use math::{Vec3f, Mat4f, ColMat3f};
 use ray_tracer::Ray;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
-    a: i32,
-    b: i32,
-    c: i32,
+    a: usize,
+    b: usize,
+    c: usize,
+}
+
+impl Face {
+    pub fn intersect(&self, mesh: &Mesh, ray: Ray) -> Option<f32> {
+        let a       = mesh.vertices[self.a];
+        let a_b     = a - mesh.vertices[self.b];
+        let a_c     = a - mesh.vertices[self.c];
+        let a_r     = a - ray.origin;
+        let d       = ray.direction;
+        let det_a   = ColMat3f::new(a_b, a_c, d).determinant();
+        let beta    = ColMat3f::new(a_r, a_c, d).determinant() / det_a;
+        let gamma   = ColMat3f::new(a_b, a_r, d).determinant() / det_a;
+        let t       = ColMat3f::new(a_b, a_c, a_r).determinant() / det_a;
+        if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
+            Some(t)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -49,20 +68,21 @@ impl Mesh {
     }
 
     fn read_face(s: &String) -> Face {
-        let v: Vec<i32> = s.split_whitespace()
-            .filter_map(|x| i32::from_str(x).ok())
+        let v: Vec<usize> = s.split_whitespace()
+            .filter_map(|x| usize::from_str(x).ok())
+            .map(|x| x-1) // SMF indexes from 1
             .collect();
         Face { a: v[0], b: v[1], c: v[2] }
     }
 
     pub fn transform(&self, t: &Mat4f) -> Self {
-        let vs: Vec<_> = self.vertices.clone().into_iter()
-            .map(|v| t.transform_point(v))
+        let vs: Vec<_> = self.vertices.iter()
+            .map(|&v| t.transform_point(v))
             .collect();
         Mesh { vertices: vs, faces: self.faces.clone() }
     }
 
     pub fn intersect(&self, ray: Ray) -> Vec<f32> {
-        vec![]
+        self.faces.iter().filter_map(|f| f.intersect(self, ray)).collect()
     }
 }
