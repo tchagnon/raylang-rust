@@ -45,8 +45,8 @@ impl<'a> RayTracer<'a> {
 
 #[derive(Clone, Copy, Debug)]
 pub struct Ray {
-    origin: Vec3f,
-    direction: Vec3f,
+    pub origin: Vec3f,
+    pub direction: Vec3f,
 }
 
 impl Ray {

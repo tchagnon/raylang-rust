@@ -22,7 +22,32 @@ impl Primitive {
     }
 
     pub fn intersect(&self, ray: Ray) -> Vec<f32> {
-        vec![]
+        match *self {
+            Primitive::Sphere { radius, center } => Primitive::intersect_sphere(radius, center, ray),
+        }
+    }
+
+    fn intersect_sphere(radius: f32, center: Vec3f, ray: Ray) -> Vec<f32> {
+        let o_c = ray.origin - center;
+        let b = 2.0 * ray.direction.dot(o_c);
+        let c = o_c.magnitude_squared() - radius.powi(2);
+        let discrim = b.powi(2) - 4.0 * c;
+        if discrim < 0.0 {
+            return vec![];
+        }
+
+        let t0 = (-b - discrim.sqrt()) / 2.0;
+        let t1 = (-b + discrim.sqrt()) / 2.0;
+
+        if t0 < 0.0 {
+            if t1 < 0.0 {
+                vec![]
+            } else {
+                vec![t1]
+            }
+        } else {
+            vec![t0, t1]
+        }
     }
 }
 
