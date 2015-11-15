@@ -10,9 +10,10 @@ mod color;
 mod math;
 mod mesh;
 mod primitive;
+mod ray_tracer;
 mod scene;
 
-use color::Color;
+use ray_tracer::RayTracer;
 use scene::Scene;
 
 fn main() {
@@ -23,17 +24,15 @@ fn main() {
     }
 
     let path = Path::new(&args[1]);
-    let scene = Scene::read(path);
-    println!("Raw Scene: {:?}", scene);
-    let scene = scene.prepare();
-    println!("Prepared Scene: {:?}", scene);
+    let scene = Scene::read(path).prepare();
+    let ray_tracer = RayTracer::new(&scene);
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
-    for (_x, _y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let bg = scene.background.vec3f.scale(0.75);
-        *pixel = Color::new(bg).rgb();
+    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+        *pixel = ray_tracer.trace_pixel(x, y).rgb();
     }
 
     let fout = Path::new(&scene.image);
     let _ = imgbuf.save(fout);
+    println!("Wrote file {:?}", fout);
 }
