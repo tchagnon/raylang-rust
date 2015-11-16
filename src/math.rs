@@ -1,4 +1,5 @@
 //! Math module for core vector and matrix operations.
+#![allow(dead_code)]
 
 use std::f32::consts;
 use std::ops::{Add, Sub};
@@ -77,6 +78,20 @@ impl Vec3f {
 
     pub fn norm(&self) -> Vec3f {
         self.scale(1.0 / self.magnitude())
+    }
+
+    /**
+      * Compute a partial determinant using self and b as the first two columns
+      * of a 3 column matrix.  Returns a vector which can be dot-product
+      * multiplied by the third column to give the determinant scalar value.
+      */
+    pub fn partial_determinant(&self, b: Vec3f) -> Vec3f {
+        let a = self;
+        Vec3f {
+            x: a.y*b.z - a.z*b.y,
+            y: a.z*b.x - a.x*b.z,
+            z: a.x*b.y - a.y*b.x,
+        }
     }
 }
 
@@ -323,27 +338,6 @@ impl Decodable for Mat4f {
             },
             t@_ => Err(d.error(&format!("unknown transform {}", t))),
         }
-    }
-}
-
-/**
- * 3x3 Column Matrix
- */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct ColMat3f {
-    pub c1: Vec3f,
-    pub c2: Vec3f,
-    pub c3: Vec3f,
-}
-
-impl ColMat3f {
-    pub fn new(c1: Vec3f, c2: Vec3f, c3: Vec3f) -> ColMat3f {
-        ColMat3f { c1: c1, c2: c2, c3: c3 }
-    }
-
-    pub fn determinant(&self) -> f32 {
-        let (a, b, c) = (self.c1, self.c2, self.c3);
-        a.x*(b.y*c.z - c.y*b.z) + b.x*(c.y*a.z - a.y*c.z) + c.x*(a.y*b.z - b.y*a.z)
     }
 }
 

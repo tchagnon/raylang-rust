@@ -5,38 +5,56 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::Path;
-use math::{Vec3f, Mat4f, ColMat3f};
+use math::{Vec3f, Mat4f};
 use ray_tracer::Ray;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
-    a: usize,
-    b: usize,
-    c: usize,
+    a: Vec3f,
+    b: Vec3f,
+    c: Vec3f,
+
+    det_t: f32,
 }
 
 impl Face {
-    pub fn intersect(&self, mesh: &Mesh, ray: Ray) -> Option<f32> {
-        let a       = mesh.vertices[self.a];
-        let a_b     = a - mesh.vertices[self.b];
-        let a_c     = a - mesh.vertices[self.c];
-        let a_r     = a - ray.origin;
+    /**
+      * Intersect the face with a ray.
+      */
+    pub fn intersect(&self, ray: Ray) -> Option<f32> {
         let d       = ray.direction;
-        let det_a   = ColMat3f::new(a_b, a_c, d).determinant();
-        let beta    = ColMat3f::new(a_r, a_c, d).determinant() / det_a;
-        let gamma   = ColMat3f::new(a_b, a_r, d).determinant() / det_a;
-        let t       = ColMat3f::new(a_b, a_c, a_r).determinant() / det_a;
+        let det_a   = self.a.dot(d);
+        let beta    = self.b.dot(d) / det_a;
+        let gamma   = self.c.dot(d) / det_a;
+        let t       = self.det_t / det_a;
+
         if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
             Some(t)
         } else {
             None
         }
     }
+
+    /**
+      * Transform the face by matrix t and precompute partial determinants for intersection.
+      */
+    pub fn transform_prepare(&self, t: &Mat4f, origin: &Vec3f) -> Face {
+        let a   = t.transform_point(self.a);
+        let a_b = t.transform_direction(self.a - self.b);
+        let a_c = t.transform_direction(self.a - self.c);
+        let a_r = a - *origin;
+        let ab_pdet_ac = a_b.partial_determinant(a_c);
+        Face {
+            a: ab_pdet_ac,
+            b: a_r.partial_determinant(a_c),
+            c: a_b.partial_determinant(a_r),
+            det_t: ab_pdet_ac.dot(a_r),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Mesh {
-    pub vertices: Vec<Vec3f>,
     pub faces: Vec<Face>,
 }
 
@@ -55,9 +73,9 @@ impl Mesh {
             .collect();
         let faces   : Vec<Face> = lines.iter()
             .filter(|l| l.starts_with("f "))
-            .map(Mesh::read_face)
+            .map(|l| Mesh::read_face(&vertices, l))
             .collect();
-        Mesh { vertices: vertices, faces: faces }
+        Mesh { faces: faces }
     }
 
     fn read_vertex(s: &String) -> Vec3f {
@@ -67,22 +85,30 @@ impl Mesh {
         Vec3f { x: v[0], y: v[1], z: v[2] }
     }
 
-    fn read_face(s: &String) -> Face {
+    fn read_face(vertices: &Vec<Vec3f>, s: &String) -> Face {
         let v: Vec<usize> = s.split_whitespace()
             .filter_map(|x| usize::from_str(x).ok())
             .map(|x| x-1) // SMF indexes from 1
             .collect();
-        Face { a: v[0], b: v[1], c: v[2] }
+        Face {
+            a: vertices[v[0]],
+            b: vertices[v[1]],
+            c: vertices[v[2]],
+            .. Default::default()
+        }
     }
 
-    pub fn transform(&self, t: &Mat4f) -> Self {
-        let vs: Vec<_> = self.vertices.iter()
-            .map(|&v| t.transform_point(v))
-            .collect();
-        Mesh { vertices: vs, faces: self.faces.clone() }
+    pub fn transform(&self, t: &Mat4f, origin: &Vec3f) -> Self {
+        Mesh {
+            faces: self.faces.iter()
+                .map(|f| f.transform_prepare(t, origin))
+                .collect()
+        }
     }
 
     pub fn intersect(&self, ray: Ray) -> Vec<f32> {
-        self.faces.iter().filter_map(|f| f.intersect(self, ray)).collect()
+        self.faces.iter()
+            .filter_map(|f| f.intersect(ray))
+            .collect()
     }
 }

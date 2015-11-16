@@ -42,7 +42,7 @@ impl Scene {
 
     // Precompute, flatten and transform objects in the scene
     pub fn prepare(&self) -> Scene {
-        let new_objects = self.objects.prepare(&Mat4f::identity());
+        let new_objects = self.objects.prepare(&Mat4f::identity(), &self.camera.location);
         Scene {
             objects: new_objects,
             .. self.clone()
@@ -72,24 +72,24 @@ pub enum ObjectTree {
 }
 
 impl ObjectTree {
-    pub fn prepare(&self, t: &Mat4f) -> ObjectTree {
+    pub fn prepare(&self, t: &Mat4f, origin: &Vec3f) -> ObjectTree {
         match *self {
             ObjectTree::Group(ref objs) => {
-                ObjectTree::Group(objs.into_iter().map({ |o| o.prepare(t) }).collect())
+                ObjectTree::Group(objs.iter().map({ |o| o.prepare(t, origin) }).collect())
             },
             ObjectTree::Transform { ref child, ref transform } => {
                 let new_t = t.mm_multiply(transform);
-                child.prepare(&new_t)
+                child.prepare(&new_t, origin)
             },
             ObjectTree::Primitive(ref p) => ObjectTree::Primitive(p.transform(t)),
-            ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t)),
+            ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t, origin)),
         }
     }
 
     pub fn intersect(&self, ray: Ray) -> Vec<f32> {
         match *self {
             ObjectTree::Group(ref objs) => {
-                objs.into_iter().flat_map({ |o| o.intersect(ray).into_iter() }).collect()
+                objs.iter().flat_map({ |o| o.intersect(ray).into_iter() }).collect()
             },
             ObjectTree::Transform { ref child, ref transform } => {
                 child.intersect(ray.transform(transform))
