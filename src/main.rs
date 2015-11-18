@@ -2,7 +2,6 @@ extern crate image;
 extern crate toml;
 extern crate rustc_serialize;
 
-use std::cmp;
 use std::env;
 use std::thread;
 use std::path::Path;
@@ -46,13 +45,15 @@ fn main() {
         })
     }).collect();
 
-    let imgbufs: Vec<_> = handles.into_iter().map(|h| h.join().unwrap()).collect();
+    let chunk_bufs: Vec<_> = handles.into_iter().map(|h| { h.join().unwrap() }).collect();
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let chunk_height = scene.height/threads;
-        let t = cmp::min(threads-1, y / chunk_height);
-        *pixel = *imgbufs[t as usize].get_pixel(x, y - t*chunk_height);
+    let mut y_off = 0;
+    for buf in chunk_bufs {
+        for (x, y, pixel) in buf.enumerate_pixels() {
+            imgbuf.put_pixel(x, y_off + y, *pixel);
+        }
+        y_off += buf.height();
     }
 
     let fout = Path::new(&scene.image);
