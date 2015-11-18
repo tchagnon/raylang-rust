@@ -2,7 +2,9 @@ extern crate image;
 extern crate toml;
 extern crate rustc_serialize;
 
+use std::cmp;
 use std::env;
+use std::thread;
 use std::path::Path;
 use image::ImageBuffer;
 
@@ -25,28 +27,32 @@ fn main() {
 
     let path = Path::new(&args[1]);
     let scene = Scene::read(path).prepare();
-    let ray_tracer = RayTracer::new(&scene);
 
-    let threads = 4;
-    let mut imgbufs: Vec<_> = (0..threads).map(|_| {
-        ImageBuffer::new(scene.width, scene.height/threads)
+    let threads = scene.threads;
+    let handles: Vec<_> = (0..threads).map(|t| {
+        let scene = scene.clone();
+        thread::spawn(move || {
+            let ray_tracer = RayTracer::new(&scene);
+            let extra = if t == threads - 1 { scene.height % threads } else { 0 };
+            let (h, w) = (scene.height / threads + extra, scene.width);
+            let mut imgbuf = ImageBuffer::new(w, h);
+            for y in (0..h) {
+                for x in (0..w) {
+                    let yy = t * h + y;
+                    imgbuf.put_pixel(x, y, ray_tracer.trace_pixel(x, yy).rgb());
+                }
+            }
+            imgbuf
+        })
     }).collect();
 
-    for t in (0..threads) {
-        for y in (0..scene.height/threads) {
-            for x in (0..scene.width) {
-                let yy = t * scene.height / threads + y;
-                let t = t as usize;
-                imgbufs[t].put_pixel(x, y, ray_tracer.trace_pixel(x, yy).rgb());
-            }
-        }
-    }
+    let imgbufs: Vec<_> = handles.into_iter().map(|h| h.join().unwrap()).collect();
 
     let mut imgbuf = ImageBuffer::new(scene.width, scene.height);
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
         let chunk_height = scene.height/threads;
-        let t = (y / chunk_height) as usize;
-        *pixel = *imgbufs[t].get_pixel(x, y % chunk_height);
+        let t = cmp::min(threads-1, y / chunk_height);
+        *pixel = *imgbufs[t as usize].get_pixel(x, y - t*chunk_height);
     }
 
     let fout = Path::new(&scene.image);

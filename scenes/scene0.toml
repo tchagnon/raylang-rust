@@ -4,6 +4,7 @@ image       = "scene0.png"
 width       = 512
 height      = 512
 background  = "black"
+threads     = 4
 
 [camera]
 distance    = 3.0
@@ -39,4 +40,4 @@ transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
 type = "Transform"
 transform = {type = "Rotate", degrees = -90.0, axis = [0.0, 1.0, 0.0]}
 #child = {type = "Mesh", mesh = "models/icos.smf"}
-child = {type = "Mesh", mesh = "models/bound-bunny_1k.smf"}
+child = {type = "Mesh", mesh = "models/bound-bunny_5k.smf"}

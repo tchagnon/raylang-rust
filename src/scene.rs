@@ -21,6 +21,7 @@ pub struct Scene {
     pub image: String,
     pub width: u32,
     pub height: u32,
+    pub threads: u32,
     pub background: Color,
     pub camera: Camera,
     pub objects: ObjectTree,
