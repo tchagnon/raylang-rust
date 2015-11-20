@@ -3,8 +3,9 @@ extern crate toml;
 extern crate rustc_serialize;
 
 use std::env;
-use std::thread;
 use std::path::Path;
+use std::sync::Arc;
+use std::thread;
 use image::ImageBuffer;
 
 mod color;
@@ -26,6 +27,7 @@ fn main() {
 
     let path = Path::new(&args[1]);
     let scene = Scene::read(path).prepare();
+    let scene = Arc::new(scene);
 
     let threads = scene.threads;
     let handles: Vec<_> = (0..threads).map(|t| {
