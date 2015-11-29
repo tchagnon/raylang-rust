@@ -25,6 +25,7 @@ pub struct Scene {
     pub background: Color,
     pub camera: Camera,
     pub objects: ObjectTree,
+    pub lights: Vec<Light>,
 }
 
 impl Scene {
@@ -70,6 +71,10 @@ pub enum ObjectTree {
         child: Box<ObjectTree>,
         transform: Mat4f,
     },
+    Material {
+        child: Box<ObjectTree>,
+        material: Material,
+    },
 }
 
 impl ObjectTree {
@@ -84,6 +89,12 @@ impl ObjectTree {
             },
             ObjectTree::Primitive(ref p) => ObjectTree::Primitive(p.transform(t)),
             ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t, origin)),
+            ObjectTree::Material { ref child, ref material } => {
+                ObjectTree::Material {
+                    child: Box::new(child.prepare(t, origin)),
+                    material: material.clone(),
+                }
+            },
         }
     }
 
@@ -97,6 +108,10 @@ impl ObjectTree {
             },
             ObjectTree::Primitive(ref p) => p.intersect(ray),
             ObjectTree::Mesh(ref m) => m.intersect(ray),
+            ObjectTree::Material { ref child, ref material } => {
+                // TODO pass material through
+                child.intersect(ray)
+            },
         }
     }
 }
@@ -125,7 +140,27 @@ impl Decodable for ObjectTree {
                 let xform = try!(d.read_struct_field("transform", 0, |d| { Mat4f::decode(d) }));
                 Ok(ObjectTree::Transform { child: Box::new(child), transform: xform })
             },
+            "Material" => {
+                let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));
+                let m = try!(d.read_struct_field("material", 0, |d| { Material::decode(d) }));
+                Ok(ObjectTree::Material { child: Box::new(child), material: m })
+            },
             t@_ => Err(d.error(&format!("unknown object type {}", t))),
         }
     }
+}
+
+#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+pub struct Light {
+    pub color: Color,
+    pub position: Vec3f,
+}
+
+#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+pub struct Material {
+    pub kd: f32,
+    pub ks: f32,
+    pub ka: f32,
+    pub n: f32,
+    pub color: Color,
 }
