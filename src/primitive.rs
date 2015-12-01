@@ -2,7 +2,8 @@ use rustc_serialize::Decoder;
 use rustc_serialize::Decodable;
 
 use math::{Vec3f, Mat4f};
-use ray_tracer::Ray;
+use ray_tracer::{Ray, Intersection};
+use scene::Material;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Primitive {
@@ -21,13 +22,13 @@ impl Primitive {
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> Vec<f32> {
+    pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         match *self {
-            Primitive::Sphere { radius, center } => Primitive::intersect_sphere(radius, center, ray),
+            Primitive::Sphere { radius, center } => Primitive::intersect_sphere(radius, center, ray, material),
         }
     }
 
-    fn intersect_sphere(radius: f32, center: Vec3f, ray: Ray) -> Vec<f32> {
+    fn intersect_sphere(radius: f32, center: Vec3f, ray: Ray, material: &Material) -> Vec<Intersection> {
         let o_c = ray.origin - center;
         let b = 2.0 * ray.direction.dot(o_c);
         let c = o_c.magnitude_squared() - radius.powi(2);
@@ -39,14 +40,17 @@ impl Primitive {
         let t0 = (-b - discrim.sqrt()) / 2.0;
         let t1 = (-b + discrim.sqrt()) / 2.0;
 
+        let normal = |t: f32| (ray.direction.scale(t) + o_c).scale(1.0 / radius);
+
         if t0 < 0.0 {
             if t1 < 0.0 {
                 vec![]
             } else {
-                vec![t1]
+                vec![ Intersection::new(t1, normal(t1), material) ]
             }
         } else {
-            vec![t0, t1]
+            vec![Intersection::new(t0, normal(t0), material),
+                 Intersection::new(t1, normal(t1), material)]
         }
     }
 }

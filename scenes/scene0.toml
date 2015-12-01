@@ -6,6 +6,13 @@ height      = 512
 background  = "black"
 threads     = 4
 
+[default_material]
+kd = 0.7
+ks = 0.3
+ka = 0.1
+n  = 30.0
+color = "white"
+
 [camera]
 distance    = 3.0
 fov_angle   = 56.0
@@ -42,7 +49,7 @@ transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
 
 [[objects.items]]
 type = "Material"
-material = { kd = 0.7, ks = 0.3, ka = 0.1, n  = 30.0, color = "white" }
+material = { kd = 0.7, ks = 0.3, ka = 0.1, n  = 30.0, color = "cornflowerblue" }
 
   [objects.items.child]
   type = "Transform"

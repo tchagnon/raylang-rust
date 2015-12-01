@@ -1,7 +1,8 @@
 use color;
 use color::Color;
 use math::{to_radians, Vec3f, Mat4f};
-use scene::Scene;
+use scene::{Scene, Material};
+use std::cmp::Ordering;
 
 pub struct RayTracer<'a> {
     scene: &'a Scene,
@@ -34,12 +35,17 @@ impl<'a> RayTracer<'a> {
 
         let ray = Ray { origin: origin, direction: d_jk };
 
-        let intersections = scene.objects.intersect(ray);
+        let intersections = scene.objects.intersect(ray, &scene.default_material);
         if intersections.is_empty() {
             scene.background
         } else {
-            color::WHITE
+            let min_intersection = intersections.iter().min().unwrap();
+            self.get_color(min_intersection)
         }
+    }
+
+    pub fn get_color(&self, intx: &Intersection) -> Color {
+        color::WHITE
     }
 }
 
@@ -57,3 +63,43 @@ impl Ray {
         }
     }
 }
+
+#[derive(Clone, Debug)]
+pub struct Intersection {
+    pub distance: f32,
+    pub normal: Vec3f,
+    pub material: Material,
+}
+
+impl Intersection {
+    pub fn new(d: f32, n: Vec3f, m: &Material) -> Intersection {
+        Intersection {
+            distance: d,
+            normal: n,
+            material: m.clone(),
+        }
+    }
+}
+
+impl Ord for Intersection {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let d1 = self.distance;
+        let d2 = other.distance;
+        d1.partial_cmp(&d2)
+            .expect(&format!("Unable to compare distances {} and {}", d1, d2))
+    }
+}
+
+impl PartialOrd for Intersection {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl PartialEq for Intersection {
+    fn eq(&self, other: &Self) -> bool {
+        false
+    }
+}
+
+impl Eq for Intersection { }

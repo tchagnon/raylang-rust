@@ -6,7 +6,8 @@ use std::io::BufReader;
 use std::io::prelude::*;
 use std::path::Path;
 use math::{Vec3f, Mat4f};
-use ray_tracer::Ray;
+use ray_tracer::{Ray, Intersection};
+use scene::Material;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
@@ -21,7 +22,7 @@ impl Face {
     /**
       * Intersect the face with a ray.
       */
-    pub fn intersect(&self, ray: Ray) -> Option<f32> {
+    pub fn intersect(&self, ray: Ray, material: &Material) -> Option<Intersection> {
         let d       = ray.direction;
         let det_a   = self.a.dot(d);
         let beta    = self.b.dot(d) / det_a;
@@ -29,7 +30,8 @@ impl Face {
         let t       = self.det_t / det_a;
 
         if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
-            Some(t)
+            // TODO calculate face normal
+            Some(Intersection::new(t, Vec3f::zero(), material))
         } else {
             None
         }
@@ -106,9 +108,9 @@ impl Mesh {
         }
     }
 
-    pub fn intersect(&self, ray: Ray) -> Vec<f32> {
+    pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         self.faces.iter()
-            .filter_map(|f| f.intersect(ray))
+            .filter_map(|f| f.intersect(ray, material))
             .collect()
     }
 }
