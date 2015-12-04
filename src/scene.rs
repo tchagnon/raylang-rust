@@ -12,7 +12,7 @@ use toml::Decoder as TomlDecoder;
 
 use color::Color;
 use math::{Vec3f, Mat4f};
-use mesh::Mesh;
+use mesh::{Mesh, Shading};
 use primitive::Primitive;
 use ray_tracer::{Ray, Intersection};
 
@@ -130,10 +130,19 @@ impl Decodable for ObjectTree {
             "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 0, |d| {
                 d.read_to_vec(|d| { ObjectTree::decode(d) })
             })))),
-            "Mesh" => Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
-                let model_path = try!(d.read_str());
-                Ok(Mesh::read(Path::new(&model_path)))
-            })))),
+            "Mesh" => {
+                let shading = try!(d.read_struct_field("shading", 0, |d| {
+                    match try!(d.read_str()).to_lowercase().as_ref() {
+                        "flat" => Ok(Shading::Flat),
+                        "smooth" => Ok(Shading::Smooth),
+                        s@_ => Err(d.error(&format!("unknown shading type {}", s))),
+                    }
+                }));
+                Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
+                    let model_path = try!(d.read_str());
+                    Ok(Mesh::read(Path::new(&model_path), shading))
+                }))))
+            },
             "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
             "Transform" => {
                 let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));

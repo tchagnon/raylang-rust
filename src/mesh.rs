@@ -55,13 +55,20 @@ impl Face {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Shading {
+    Smooth,
+    Flat,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Mesh {
     pub faces: Vec<Face>,
+    pub shading: Shading,
 }
 
 impl Mesh {
-    pub fn read(path: &Path) -> Mesh {
+    pub fn read(path: &Path, shading: Shading) -> Mesh {
         let smf_file = match File::open(path) {
             Ok(file) => file,
             Err(why) => panic!("Could not open \"{:?}\": {}", path, why),
@@ -77,7 +84,7 @@ impl Mesh {
             .filter(|l| l.starts_with("f "))
             .map(|l| Mesh::read_face(&vertices, l))
             .collect();
-        Mesh { faces: faces }
+        Mesh { faces: faces, shading: shading }
     }
 
     fn read_vertex(s: &String) -> Vec3f {
@@ -104,7 +111,8 @@ impl Mesh {
         Mesh {
             faces: self.faces.iter()
                 .map(|f| f.transform_prepare(t, origin))
-                .collect()
+                .collect(),
+            shading: self.shading,
         }
     }
 
