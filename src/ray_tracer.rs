@@ -1,4 +1,3 @@
-use color;
 use color::Color;
 use math::{to_radians, Vec3f, Mat4f};
 use scene::{Scene, Material};
@@ -45,7 +44,10 @@ impl<'a> RayTracer<'a> {
     }
 
     pub fn get_color(&self, intx: &Intersection) -> Color {
-        color::WHITE
+        let scene = self.scene;
+        let ref material = intx.material;
+        let light = scene.ambient_light.vec3f.scale(material.k_ambient);
+        Color::new(material.color.vec3f.point_mul(light))
     }
 }
 
@@ -64,7 +66,7 @@ impl Ray {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Intersection {
     pub distance: f32,
     pub normal: Vec3f,
@@ -93,12 +95,6 @@ impl Ord for Intersection {
 impl PartialOrd for Intersection {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for Intersection {
-    fn eq(&self, other: &Self) -> bool {
-        false
     }
 }
 

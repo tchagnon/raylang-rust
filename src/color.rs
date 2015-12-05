@@ -13,6 +13,10 @@ pub struct Color {
 }
 
 impl Color {
+    pub fn new(vec3f: Vec3f) -> Color {
+        Color { vec3f: vec3f }
+    }
+
     pub fn rgb(&self) -> Rgb<u8> {
         let r = (self.vec3f.x * 255.0).round().clamp(0.0, 255.0) as u8;
         let g = (self.vec3f.y * 255.0).round().clamp(0.0, 255.0) as u8;

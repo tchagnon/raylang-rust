@@ -27,6 +27,7 @@ pub struct Scene {
     pub objects: ObjectTree,
     pub lights: Vec<Light>,
     pub default_material: Material,
+    pub ambient_light: Color,
 }
 
 impl Scene {
@@ -38,7 +39,10 @@ impl Scene {
         let mut toml = String::new();
         toml_file.read_to_string(&mut toml).unwrap();
 
-        let scene = Parser::new(&toml).parse().unwrap();
+        let mut parser = Parser::new(&toml);
+        let scene = parser.parse().unwrap_or_else(|| {
+            panic!("Unable to parse scene due to errors: {:?}", parser.errors)
+        });
         let mut decoder = TomlDecoder::new(Value::Table(scene));
         Scene::decode(&mut decoder).unwrap()
     }
@@ -167,9 +171,9 @@ pub struct Light {
 
 #[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
 pub struct Material {
-    pub kd: f32,
-    pub ks: f32,
-    pub ka: f32,
-    pub n: f32,
+    pub k_diffuse: f32,
+    pub k_specular: f32,
+    pub k_ambient: f32,
+    pub n_shininess: f32,
     pub color: Color,
 }

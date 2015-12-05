@@ -1,16 +1,17 @@
 # Scene with 2 spheres and bunny
 
-image       = "scene0.png"
-width       = 512
-height      = 512
-background  = "black"
-threads     = 4
+threads       = 4
+image         = "scene0.png"
+width         = 512
+height        = 512
+background    = "black"
+ambient_light = "white"
 
 [default_material]
-kd = 0.7
-ks = 0.3
-ka = 0.1
-n  = 30.0
+k_diffuse = 0.7
+k_specular = 0.3
+k_ambient = 0.1
+n_shininess  = 30.0
 color = "white"
 
 [camera]
@@ -49,7 +50,13 @@ transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
 
 [[objects.items]]
 type = "Material"
-material = { kd = 0.7, ks = 0.3, ka = 0.1, n  = 30.0, color = "cornflowerblue" }
+
+  [objects.items.material]
+  k_diffuse   = 0.7
+  k_specular  = 0.3
+  k_ambient   = 0.1
+  n_shininess = 30.0
+  color = "CornflowerBlue"
 
   [objects.items.child]
   type = "Transform"
