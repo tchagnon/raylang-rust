@@ -11,35 +11,63 @@ use scene::Material;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Face {
-    a: Vec3f,
-    b: Vec3f,
-    c: Vec3f,
+    ai: usize,
+    bi: usize,
+    ci: usize,
 
     ab_pdet_ac: Vec3f,
     ar_pdet_ac: Vec3f,
     ab_pdet_ar: Vec3f,
     det_t: f32,
-
-    norm_a: Vec3f,
-    norm_b: Vec3f,
-    norm_c: Vec3f,
 }
 
 impl Face {
+
+    /**
+      * Read the face from a string of indexes
+      */
+    fn read(s: &String) -> Face {
+        let v: Vec<usize> = s.split_whitespace()
+            .filter_map(|x| usize::from_str(x).ok())
+            .map(|x| x-1) // SMF indexes from 1
+            .collect();
+        Face {
+            ai: v[0],
+            bi: v[1],
+            ci: v[2],
+            .. Default::default()
+        }
+    }
+
+    pub fn normal(&self, vertices: &Vec<Vec3f>) -> Vec3f {
+        let a = vertices[self.ai];
+        let b = vertices[self.bi];
+        let c = vertices[self.ci];
+        (a-b).cross(a-c).norm()
+    }
+
     /**
       * Intersect the face with a ray.
       */
-    pub fn intersect(&self, ray: Ray, material: &Material, shading: Shading) -> Option<Intersection> {
+    pub fn intersect(&self, ray: Ray, material: &Material, mesh: &Mesh) -> Option<Intersection> {
         let d       = ray.direction;
         let det_a   = self.ab_pdet_ac.dot(d);
         let beta    = self.ar_pdet_ac.dot(d) / det_a;
         let gamma   = self.ab_pdet_ar.dot(d) / det_a;
+        let alpha   = 1.0 - beta - gamma;
         let t       = self.det_t / det_a;
 
+        let norm_a  = mesh.vertex_normals[self.ai];
+        let norm_b  = mesh.vertex_normals[self.bi];
+        let norm_c  = mesh.vertex_normals[self.ci];
+
         if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
-            let normal = match shading {
-                Shading::Flat => (self.a-self.b).cross(self.a-self.c).norm(),
-                Shading::Smooth => Vec3f::zero(),
+            let normal = match mesh.shading {
+                Shading::Flat => self.normal(&mesh.vertices),
+                Shading::Smooth =>
+                      norm_a.scale(alpha)
+                    + norm_b.scale(beta)
+                    + norm_c.scale(gamma)
             };
             Some(Intersection::new(t, normal, material))
         } else {
@@ -48,12 +76,14 @@ impl Face {
     }
 
     /**
-      * Transform the face by matrix t and precompute partial determinants for intersection.
+      * Precompute partial determinants for intersection.
       */
-    pub fn transform_prepare(&self, t: &Mat4f, origin: &Vec3f) -> Face {
-        let a   = t.transform_point(self.a);
-        let a_b = t.transform_direction(self.a - self.b);
-        let a_c = t.transform_direction(self.a - self.c);
+    pub fn prepare(&self, origin: &Vec3f, vertices: &Vec<Vec3f>) -> Face {
+        let a = vertices[self.ai];
+        let b = vertices[self.bi];
+        let c = vertices[self.ci];
+        let a_b = a - b;
+        let a_c = a - c;
         let a_r = a - *origin;
         let ab_pdet_ac = a_b.partial_determinant(a_c);
         Face {
@@ -75,6 +105,8 @@ pub enum Shading {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Mesh {
     pub faces: Vec<Face>,
+    pub vertices: Vec<Vec3f>,
+    pub vertex_normals: Vec<Vec3f>,
     pub shading: Shading,
 }
 
@@ -93,9 +125,23 @@ impl Mesh {
             .collect();
         let faces   : Vec<Face> = lines.iter()
             .filter(|l| l.starts_with("f "))
-            .map(|l| Mesh::read_face(&vertices, l))
+            .map(|l| Face::read(l))
             .collect();
-        Mesh { faces: faces, shading: shading }
+        let vertex_normals = faces.iter()
+            .fold(vec![Vec3f::zero(); vertices.len()], |mut vn, f| {
+                let n = f.normal(&vertices);
+                vn[f.ai] = vn[f.ai] + n;
+                vn[f.bi] = vn[f.bi] + n;
+                vn[f.ci] = vn[f.ci] + n;
+                vn
+        });
+        let vertex_normals = vertex_normals.iter().map(|v| v.norm()).collect();
+        Mesh {
+            faces: faces,
+            vertices: vertices,
+            vertex_normals: vertex_normals,
+            shading: shading,
+        }
     }
 
     fn read_vertex(s: &String) -> Vec3f {
@@ -105,23 +151,18 @@ impl Mesh {
         Vec3f { x: v[0], y: v[1], z: v[2] }
     }
 
-    fn read_face(vertices: &Vec<Vec3f>, s: &String) -> Face {
-        let v: Vec<usize> = s.split_whitespace()
-            .filter_map(|x| usize::from_str(x).ok())
-            .map(|x| x-1) // SMF indexes from 1
-            .collect();
-        Face {
-            a: vertices[v[0]],
-            b: vertices[v[1]],
-            c: vertices[v[2]],
-            .. Default::default()
-        }
-    }
-
     pub fn transform(&self, t: &Mat4f, origin: &Vec3f) -> Self {
+        let vertices = self.vertices.iter()
+            .map(|&v| t.transform_point(v))
+            .collect();
+        let faces = self.faces.iter()
+            .map(|f| f.prepare(origin, &vertices))
+            .collect();
         Mesh {
-            faces: self.faces.iter()
-                .map(|f| f.transform_prepare(t, origin))
+            faces: faces,
+            vertices: vertices,
+            vertex_normals: self.vertex_normals.iter()
+                .map(|&v| t.transform_direction(v))
                 .collect(),
             shading: self.shading,
         }
@@ -129,7 +170,7 @@ impl Mesh {
 
     pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         self.faces.iter()
-            .filter_map(|f| f.intersect(ray, material, self.shading))
+            .filter_map(|f| f.intersect(ray, material, self))
             .collect()
     }
 }
