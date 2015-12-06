@@ -44,6 +44,11 @@ impl Vec3f {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 
+    /** Dot product, clamped to 0 */
+    pub fn dot0(&self, rhs: Vec3f) -> f32 {
+        self.dot(rhs).max(0.0)
+    }
+
     pub fn cross(&self, rhs: Vec3f) -> Vec3f {
         Vec3f {
             x: self.y * rhs.z - self.z * rhs.y,

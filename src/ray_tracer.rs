@@ -1,6 +1,6 @@
 use color::Color;
 use math::{to_radians, Vec3f, Mat4f};
-use scene::{Scene, Material};
+use scene::{Scene, Material, Light};
 use std::cmp::Ordering;
 
 pub struct RayTracer<'a> {
@@ -39,14 +39,28 @@ impl<'a> RayTracer<'a> {
             scene.background
         } else {
             let min_intersection = intersections.iter().min().unwrap();
-            self.get_color(min_intersection)
+            self.get_color(&ray, min_intersection)
         }
     }
 
-    pub fn get_color(&self, intx: &Intersection) -> Color {
+    pub fn get_color(&self, ray: &Ray, intx: &Intersection) -> Color {
         let scene = self.scene;
         let ref material = intx.material;
-        let light = scene.ambient_light.vec3f.scale(material.k_ambient);
+
+        let intx_point = ray.origin + ray.direction.scale(intx.distance);
+        let normal = intx.normal;
+        let view = ray.direction.scale(-1.0);
+
+        let diff_spec = |light: &Light| -> Vec3f {
+            let light_dir   = (light.position - intx_point).norm();
+            let reflection  = (normal.scale(normal.dot0(light_dir) * 2.0) - light_dir).norm();
+            let diffuse     = material.k_diffuse * normal.dot0(light_dir);
+            let specular    = material.k_specular * reflection.dot0(view).powf(material.n_shininess);
+            light.color.vec3f.scale(diffuse + specular)
+        };
+
+        let ambient = scene.ambient_light.vec3f.scale(material.k_ambient);
+        let light = scene.lights.iter().map(diff_spec).fold(ambient, |a, l| a + l);
         Color::new(material.color.vec3f.point_mul(light))
     }
 }
