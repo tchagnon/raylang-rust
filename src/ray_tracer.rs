@@ -13,7 +13,21 @@ impl<'a> RayTracer<'a> {
     }
 
     pub fn trace_pixel(&self, x: u32, y: u32) -> Color {
+        let subsamples = self.scene.subsamples;
         let (x, y) = (x as f32, y as f32);
+        let mut v = Vec3f::zero();
+        let step = 1.0 / subsamples as f32;
+        for i in (0..subsamples) {
+            for j in (0..subsamples) {
+                let (i, j) = (i as f32, j as f32);
+                v = v + self.trace_subpixel(x + i * step, y + j * step).vec3f;
+            }
+        }
+        let avg_v = v.scale(1.0 / (subsamples * subsamples) as f32);
+        Color::new(avg_v)
+    }
+
+    pub fn trace_subpixel(&self, x: f32, y: f32) -> Color {
         let ref scene = self.scene;
         let ref camera = scene.camera;
         let d = camera.distance;

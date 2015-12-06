@@ -4,6 +4,7 @@ threads       = 4
 image         = "scene0.png"
 width         = 512
 height        = 512
+subsamples    = 2
 background    = "black"
 ambient_light = "white"
 
@@ -15,9 +16,9 @@ n_shininess  = 30.0
 color = "white"
 
 [camera]
-distance    = 3.0
-fov_angle   = 56.0
-location    = [0.0, 0.0, 3.0]
+distance    = 5.0
+fov_angle   = 45.0
+location    = [0.0, 0.0, 5.0]
 direction   = [0.0, 0.0, -1.0]
 up          = [0.0, 1.0, 0.0]
 
@@ -30,7 +31,7 @@ type = "Group"
 
 [[objects.items]]
 type = "Transform"
-transform = {type = "Translate", vector = [-1.0, 0.0, 0.0]}
+transform = {type = "Translate", vector = [-1.0, 1.0, 0.0]}
 
   [objects.items.child]
   type = "Primitive"
@@ -40,7 +41,7 @@ transform = {type = "Translate", vector = [-1.0, 0.0, 0.0]}
 
 [[objects.items]]
 type = "Transform"
-transform = {type = "Translate", vector = [1.0, 0.0, 0.0]}
+transform = {type = "Translate", vector = [1.0, 1.0, 0.0]}
 
   [objects.items.child]
   type = "Primitive"
@@ -60,6 +61,7 @@ type = "Material"
 
   [objects.items.child]
   type = "Transform"
-  transform = {type = "Rotate", degrees = 25.0, axis = [0.0, 1.0, 0.0]}
+  transform = {type = "Translate", vector = [0.0, -0.3, 2.5]}
+  #transform = {type = "Rotate", degrees = 25.0, axis = [0.0, 1.0, 0.0]}
   #child = {type = "Mesh", mesh = "models/icos.smf", shading = "flat"}
   child = {type = "Mesh", mesh = "models/bound-bunny_5k.smf", shading = "smooth"}
