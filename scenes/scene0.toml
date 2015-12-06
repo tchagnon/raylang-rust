@@ -60,6 +60,6 @@ type = "Material"
 
   [objects.items.child]
   type = "Transform"
-  transform = {type = "Rotate", degrees = -90.0, axis = [0.0, 1.0, 0.0]}
+  transform = {type = "Rotate", degrees = 25.0, axis = [0.0, 1.0, 0.0]}
   #child = {type = "Mesh", mesh = "models/icos.smf", shading = "flat"}
-  child = {type = "Mesh", mesh = "models/bound-bunny_5k.smf", shading = "smooth"}
+  child = {type = "Mesh", mesh = "models/bound-bunny_5k.smf", shading = "flat"}

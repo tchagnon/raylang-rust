@@ -15,23 +15,33 @@ pub struct Face {
     b: Vec3f,
     c: Vec3f,
 
+    ab_pdet_ac: Vec3f,
+    ar_pdet_ac: Vec3f,
+    ab_pdet_ar: Vec3f,
     det_t: f32,
+
+    norm_a: Vec3f,
+    norm_b: Vec3f,
+    norm_c: Vec3f,
 }
 
 impl Face {
     /**
       * Intersect the face with a ray.
       */
-    pub fn intersect(&self, ray: Ray, material: &Material) -> Option<Intersection> {
+    pub fn intersect(&self, ray: Ray, material: &Material, shading: Shading) -> Option<Intersection> {
         let d       = ray.direction;
-        let det_a   = self.a.dot(d);
-        let beta    = self.b.dot(d) / det_a;
-        let gamma   = self.c.dot(d) / det_a;
+        let det_a   = self.ab_pdet_ac.dot(d);
+        let beta    = self.ar_pdet_ac.dot(d) / det_a;
+        let gamma   = self.ab_pdet_ar.dot(d) / det_a;
         let t       = self.det_t / det_a;
 
         if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
-            // TODO calculate face normal
-            Some(Intersection::new(t, Vec3f::zero(), material))
+            let normal = match shading {
+                Shading::Flat => (self.a-self.b).cross(self.a-self.c).norm(),
+                Shading::Smooth => Vec3f::zero(),
+            };
+            Some(Intersection::new(t, normal, material))
         } else {
             None
         }
@@ -47,10 +57,11 @@ impl Face {
         let a_r = a - *origin;
         let ab_pdet_ac = a_b.partial_determinant(a_c);
         Face {
-            a: ab_pdet_ac,
-            b: a_r.partial_determinant(a_c),
-            c: a_b.partial_determinant(a_r),
+            ab_pdet_ac: ab_pdet_ac,
+            ar_pdet_ac: a_r.partial_determinant(a_c),
+            ab_pdet_ar: a_b.partial_determinant(a_r),
             det_t: ab_pdet_ac.dot(a_r),
+            .. self.clone()
         }
     }
 }
@@ -118,7 +129,7 @@ impl Mesh {
 
     pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         self.faces.iter()
-            .filter_map(|f| f.intersect(ray, material))
+            .filter_map(|f| f.intersect(ray, material, self.shading))
             .collect()
     }
 }
