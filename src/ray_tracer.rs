@@ -17,8 +17,8 @@ impl<'a> RayTracer<'a> {
         let (x, y) = (x as f32, y as f32);
         let mut v = Vec3f::zero();
         let step = 1.0 / subsamples as f32;
-        for i in (0..subsamples) {
-            for j in (0..subsamples) {
+        for i in 0..subsamples {
+            for j in 0..subsamples {
                 let (i, j) = (i as f32, j as f32);
                 v = v + self.trace_subpixel(x + i * step, y + j * step).vec3f;
             }

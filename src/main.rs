@@ -37,8 +37,8 @@ fn main() {
             let extra = if t == threads - 1 { scene.height % threads } else { 0 };
             let (h, w) = (scene.height / threads + extra, scene.width);
             let mut imgbuf = ImageBuffer::new(w, h);
-            for y in (0..h) {
-                for x in (0..w) {
+            for y in 0..h {
+                for x in 0..w {
                     let yy = t * h + y;
                     imgbuf.put_pixel(x, y, ray_tracer.trace_pixel(x, yy).rgb());
                 }
