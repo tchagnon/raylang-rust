@@ -3,7 +3,12 @@ name = "raylang-rust"
 version = "0.1.0"
 authors = ["Tim Chagnon <tachagnon@gmail.com>"]
 
+[lib]
+name = "raylangrust"
+crate-type = ["dylib"]
+
 [dependencies]
 image = "0.4"
 toml = "0.1"
 rustc-serialize = "0.3"
+libc = "0.2"

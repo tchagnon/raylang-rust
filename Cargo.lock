@@ -3,6 +3,7 @@ name = "raylang-rust"
 version = "0.1.0"
 dependencies = [
  "image 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
