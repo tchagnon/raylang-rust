@@ -3,7 +3,9 @@ extern crate toml;
 extern crate rustc_serialize;
 
 use std::env;
+use std::fs::File;
 use std::path::Path;
+use std::io::prelude::*;
 
 mod color;
 mod math;
@@ -22,7 +24,12 @@ fn main() {
     }
 
     let path = Path::new(&args[1]);
-    let scene = Scene::read(path).prepare();
+    let mut toml_file = File::open(path)
+        .expect(&format!("Could not open file {:?}", path));
+    let mut toml = String::new();
+    toml_file.read_to_string(&mut toml).unwrap();
+
+    let scene = Scene::decode_toml(&toml).prepare();
 
     scene.render();
     println!("Wrote file {:?}", scene.image);

@@ -12,34 +12,19 @@ mod ray_tracer;
 mod scene;
 
 use libc::c_char;
-use std::path::Path;
 use std::ffi::CStr;
-use math::Vec3f;
 use scene::Scene;
 
 #[no_mangle]
-pub extern fn vec3f(x: f32, y: f32, z: f32) -> *mut Vec3f {
-    let v = Box::new(Vec3f::new(x, y, z));
-    Box::into_raw(v)
-}
-
-#[no_mangle]
-pub extern fn mag(v: *mut Vec3f) -> f32 {
+pub extern fn decode_json_scene(json: *const c_char) -> *const Scene {
     unsafe {
-        (*v).magnitude()
+        let json_str = CStr::from_ptr(json).to_str()
+            .expect("Error converting json to str");
+        Box::into_raw(
+            Box::new(
+                Scene::decode_json(json_str).prepare()))
     }
-}
 
-#[no_mangle]
-pub extern fn read_scene(toml_path: *mut c_char) -> *const Scene {
-    unsafe {
-        let path_str = CStr::from_ptr(toml_path).to_str()
-            .expect("Error converting path to string");
-        let path = Path::new(path_str);
-        let scene = Scene::read(path).prepare();
-        let b = Box::new(scene);
-        Box::into_raw(b)
-    }
 }
 
 #[no_mangle]

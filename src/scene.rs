@@ -1,16 +1,12 @@
 //! Scene module for reading scene config from toml
 
-use rustc_serialize::Decoder;
-use rustc_serialize::Decodable;
-use rustc_serialize::DecoderHelpers;
+use rustc_serialize::{Decoder, Decodable, DecoderHelpers};
+use rustc_serialize::json;
 use std::convert::AsRef;
-use std::fs::File;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
-use std::io::prelude::*;
-use toml::{Parser, Value};
-use toml::Decoder as TomlDecoder;
+use toml;
 use image::ImageBuffer;
 
 use color::Color;
@@ -35,20 +31,15 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn read(path: &Path) -> Scene {
-        let mut toml_file = match File::open(path) {
-            Ok(file) => file,
-            Err(why) => panic!("Could not open \"{:?}\": {}", path, why),
-        };
-        let mut toml = String::new();
-        toml_file.read_to_string(&mut toml).unwrap();
 
-        let mut parser = Parser::new(&toml);
-        let scene = parser.parse().unwrap_or_else(|| {
-            panic!("Unable to parse scene due to errors: {:?}", parser.errors)
-        });
-        let mut decoder = TomlDecoder::new(Value::Table(scene));
-        Scene::decode(&mut decoder).unwrap()
+    #[allow(dead_code)]
+    pub fn decode_toml(s: &str) -> Scene {
+        toml::decode_str(s).expect("Unable to decode Scene TOML")
+    }
+
+    #[allow(dead_code)]
+    pub fn decode_json(s: &str) -> Scene {
+        json::decode(s).expect("Unable to decode Scene JSON")
     }
 
     // Precompute, flatten and transform objects in the scene
