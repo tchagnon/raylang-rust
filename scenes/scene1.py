@@ -1,17 +1,4 @@
-from ctypes import *
-import json
-
-lib = cdll.LoadLibrary('target/release/libraylangrust.dylib')
-
-decode_json_scene = lib.decode_json_scene
-decode_json_scene.argtypes = [c_char_p]
-decode_json_scene.restype = c_void_p
-
-render = lib.render
-render.argtypes = [c_void_p]
-render.restype = None
-
-##
+from raylang import render
 
 scene = {
     'threads'      : 4,
@@ -47,6 +34,4 @@ scene = {
     }
 }
 
-scene_json = json.dumps(scene)
-scene_ptr = decode_json_scene(scene_json)
-render(scene_ptr)
+render(scene)
