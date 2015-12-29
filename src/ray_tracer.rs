@@ -70,7 +70,7 @@ impl<'a> RayTracer<'a> {
             let reflection  = (normal.scale(normal.dot0(light_dir) * 2.0) - light_dir).norm();
             let diffuse     = material.k_diffuse * normal.dot0(light_dir);
             let specular    = material.k_specular * reflection.dot0(view).powf(material.n_shininess);
-            light.color.vec3f.scale(diffuse + specular)
+            light.color.vec3f.scale(light.intensity * (diffuse + specular))
         };
 
         let ambient = scene.ambient_light.vec3f.scale(material.k_ambient);

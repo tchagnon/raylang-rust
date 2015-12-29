@@ -63,11 +63,14 @@ impl Face {
 
         if beta >= 0.0 && gamma >= 0.0 && (beta + gamma) <= 1.0 && t >= 0.0 {
             let normal = match mesh.shading {
-                Shading::Flat => self.normal(&mesh.vertices),
+                Shading::Flat => {
+                    (norm_a + norm_b + norm_c).norm()
+                },
                 Shading::Smooth =>
-                      norm_a.scale(alpha)
+                    ( norm_a.scale(alpha)
                     + norm_b.scale(beta)
-                    + norm_c.scale(gamma)
+                    + norm_c.scale(gamma))
+                    .norm()
             };
             Some(Intersection::new(t, normal, material))
         } else {

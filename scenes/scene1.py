@@ -2,12 +2,14 @@ from raylang import *
 from math import pi, cos, sin
 
 light_fire = {
-    'color'      : 'orange', # *2
+    'color'      : 'orange',
+    'intensity'  : 2.0,
     'position'   : [0.0, 1.0, 0.0]
 }
 
 light0 = {
-    'color'    : 'white', # *0.5
+    'color'    : 'white',
+    'intensity': 0.5,
     'position' : [4.0, 4.0, 9.0]
 }
 
@@ -57,7 +59,7 @@ scene = {
     'image'        : 'scene1.png',
     'width'        : 512,
     'height'       : 512,
-    'subsamples'   : 1,
+    'subsamples'   : 2,
     'background'   : 'black',
     'ambient_light': 'white',
 

@@ -199,6 +199,7 @@ impl Decodable for ObjectTree {
 #[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
 pub struct Light {
     pub color: Color,
+    pub intensity: f32,
     pub position: Vec3f,
 }
 
