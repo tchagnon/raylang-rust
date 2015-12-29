@@ -64,3 +64,11 @@ def mesh(smf_file, shading):
     'mesh': smf_file,
     'shading': shading
   }
+
+def sphere(radius, center):
+  return {
+    'type': 'Primitive',
+    'primitive': 'Sphere',
+    'radius': radius,
+    'center': center
+  }
