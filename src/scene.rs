@@ -159,38 +159,40 @@ impl Default for ObjectTree {
 
 impl Decodable for ObjectTree {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        match try!(d.read_struct_field("type", 0, |d| {
-            Ok(try!(d.read_str()))
-        })).as_ref() {
-            "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 0, |d| {
-                d.read_to_vec(|d| { ObjectTree::decode(d) })
-            })))),
-            "Mesh" => {
-                let shading = try!(d.read_struct_field("shading", 0, |d| {
-                    match try!(d.read_str()).to_lowercase().as_ref() {
-                        "flat" => Ok(Shading::Flat),
-                        "smooth" => Ok(Shading::Smooth),
-                        s@_ => Err(d.error(&format!("unknown shading type {}", s))),
-                    }
-                }));
-                Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
-                    let model_path = try!(d.read_str());
-                    Ok(Mesh::read(Path::new(&model_path), shading))
-                }))))
-            },
-            "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
-            "Transform" => {
-                let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));
-                let xform = try!(d.read_struct_field("transform", 0, |d| { Mat4f::decode(d) }));
-                Ok(ObjectTree::Transform { child: Box::new(child), transform: xform })
-            },
-            "Material" => {
-                let child = try!(d.read_struct_field("child", 0, |d| { ObjectTree::decode(d) }));
-                let m = try!(d.read_struct_field("material", 0, |d| { Material::decode(d) }));
-                Ok(ObjectTree::Material { child: Box::new(child), material: m })
-            },
-            t@_ => Err(d.error(&format!("unknown object type {}", t))),
-        }
+        d.read_struct("", 0, |d| {
+            match try!(d.read_struct_field("type", 0, |d| {
+                Ok(try!(d.read_str()))
+            })).as_ref() {
+                "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 0, |d| {
+                    d.read_to_vec(ObjectTree::decode)
+                })))),
+                "Mesh" => {
+                    let shading = try!(d.read_struct_field("shading", 0, |d| {
+                        match try!(d.read_str()).to_lowercase().as_ref() {
+                            "flat" => Ok(Shading::Flat),
+                            "smooth" => Ok(Shading::Smooth),
+                            s@_ => Err(d.error(&format!("unknown shading type {}", s))),
+                        }
+                    }));
+                    Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
+                        let model_path = try!(d.read_str());
+                        Ok(Mesh::read(Path::new(&model_path), shading))
+                    }))))
+                },
+                "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
+                "Transform" => {
+                    let child = try!(d.read_struct_field("child", 0, ObjectTree::decode));
+                    let xform = try!(d.read_struct_field("transform", 0, Mat4f::decode));
+                    Ok(ObjectTree::Transform { child: Box::new(child), transform: xform })
+                },
+                "Material" => {
+                    let child = try!(d.read_struct_field("child", 0, ObjectTree::decode));
+                    let m = try!(d.read_struct_field("material", 0, Material::decode));
+                    Ok(ObjectTree::Material { child: Box::new(child), material: m })
+                },
+                t@_ => Err(d.error(&format!("unknown object type {}", t))),
+            }
+        })
     }
 }
 

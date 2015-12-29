@@ -325,24 +325,26 @@ impl Mat4f {
 
 impl Decodable for Mat4f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        match try!(d.read_struct_field("type", 0, |d| {
-            Ok(try!(d.read_str()))
-        })).as_ref() {
-            "Translate" => {
-                let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                Ok(Mat4f::translate(vec))
-            },
-            "Rotate" => {
-                let deg = try!(d.read_struct_field("degrees", 0, |d| { d.read_f32() }));
-                let axis = try!(d.read_struct_field("axis", 0, |d| { Vec3f::decode(d) }));
-                Ok(Mat4f::rotate(axis, deg))
-            },
-            "Scale" => {
-                let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                Ok(Mat4f::scale(vec))
-            },
-            t@_ => Err(d.error(&format!("unknown transform {}", t))),
-        }
+        d.read_struct("", 0, |d| {
+            match try!(d.read_struct_field("type", 0, |d| {
+                Ok(try!(d.read_str()))
+            })).as_ref() {
+                "Translate" => {
+                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
+                    Ok(Mat4f::translate(vec))
+                },
+                "Rotate" => {
+                    let deg = try!(d.read_struct_field("degrees", 0, |d| { d.read_f32() }));
+                    let axis = try!(d.read_struct_field("axis", 0, |d| { Vec3f::decode(d) }));
+                    Ok(Mat4f::rotate(axis, deg))
+                },
+                "Scale" => {
+                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
+                    Ok(Mat4f::scale(vec))
+                },
+                t@_ => Err(d.error(&format!("unknown transform {}", t))),
+            }
+        })
     }
 }
 
