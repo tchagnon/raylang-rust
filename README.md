@@ -41,7 +41,19 @@ Output image will be written to the file specified in the `scene0.toml` file.
 Wrote file "scene0.png"
 ```
 
-![rendered image](doc/scene0.png)
+![rendered image 0](doc/scene0.png)
+
+As of 0.2.0, scenes can also be written in Python by constructing a data
+structure similar to the toml input and passing it to a `render` function.  This
+uses the scene data structure, ray tracer C library, and Python utility
+functions as a small embedded domain-specific language (EDSL) and has the
+advantage of being able to generate parts of the scene programmatically.
+
+```
+python scenes/scene1.py
+```
+
+![rendered image 1](doc/scene1.png)
 
 ## Versions and Status
 
@@ -49,4 +61,4 @@ Tagged versions correspond to assignments. For example, 0.1.0 implements the
 requirements for assignment 1.  `master` may contain a partially completed next
 version at any time.
 
-The current version is: `0.1.0`
+The current version is: `0.2.0`

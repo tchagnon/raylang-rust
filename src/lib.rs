@@ -31,5 +31,6 @@ pub extern fn decode_json_scene(json: *const c_char) -> *const Scene {
 pub extern fn render(scene: *const Scene) {
     unsafe {
         (*scene).render();
+        println!("Wrote file {:?}", (*scene).image);
     }
 }
