@@ -6,7 +6,8 @@ use std::convert::AsRef;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
-use toml;
+use toml::{Parser, Value};
+use toml::Decoder as TomlDecoder;
 use image::ImageBuffer;
 
 use color::Color;
@@ -34,7 +35,12 @@ impl Scene {
 
     #[allow(dead_code)]
     pub fn decode_toml(s: &str) -> Scene {
-        toml::decode_str(s).expect("Unable to decode Scene TOML")
+        let mut parser = Parser::new(s);
+        let scene = parser.parse().unwrap_or_else(|| {
+            panic!("Unable to parse scene due to errors: {:?}", parser.errors)
+        });
+        let mut decoder = TomlDecoder::new(Value::Table(scene));
+        Decodable::decode(&mut decoder).expect("Unable to decode TOML")
     }
 
     #[allow(dead_code)]
