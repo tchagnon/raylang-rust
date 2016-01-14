@@ -3,8 +3,9 @@
 Simple raytracer for exploring programming languages.  Rust edition.
 
 Based on [David Breen][david]'s [CS636 Class][cs636] assignments and my own
-previous Haskell implementation [cs636-raytracer](/tchagnon/cs636-raytracer).
+previous Haskell implementation [cs636-raytracer][cs636-raytracer].
 
+[cs636-raytracer]: https://github.com/tchagnon/cs636-raytracer
 [david]: https://www.cs.drexel.edu/~david/
 [cs636]: https://www.cs.drexel.edu/~david/Classes/CS431/index_Spring09.html
 
