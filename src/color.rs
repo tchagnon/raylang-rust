@@ -1,13 +1,11 @@
 //! Color
 
 use image::Rgb;
-use rustc_serialize::Decoder;
-use rustc_serialize::Decodable;
 use std::convert::AsRef;
 use math::Vec3f;
 use math::Clamp;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Color {
     pub vec3f: Vec3f
 }
@@ -43,6 +41,7 @@ pub static BROWN            : Color = Color { vec3f: Vec3f { x: 0.596, y: 0.463,
 pub static DARKBROWN        : Color = Color { vec3f: Vec3f { x: 0.396, y: 0.263, z: 0.129 }};
 pub static CORNFLOWERBLUE   : Color = Color { vec3f: Vec3f { x: 0.392, y: 0.584, z: 0.929 }};
 
+/*
 impl Decodable for Color {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
         match try!(d.read_str()).to_lowercase().as_ref() {
@@ -67,3 +66,4 @@ impl Decodable for Color {
         }
     }
 }
+*/

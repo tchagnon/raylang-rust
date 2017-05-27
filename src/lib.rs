@@ -1,7 +1,10 @@
 //! C library interface for creating Scenes and rendering them
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
 extern crate image;
 extern crate toml;
-extern crate rustc_serialize;
 extern crate libc;
 
 mod color;

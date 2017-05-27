@@ -3,8 +3,6 @@
 
 use std::f32::consts;
 use std::ops::{Add, Sub};
-use rustc_serialize::Decoder;
-use rustc_serialize::Decodable;
 
 /// Degrees to radians
 pub fn to_radians(x: f32) -> f32 {
@@ -24,7 +22,7 @@ impl Clamp for f32 {
 /**
  * 3x1 real vector type
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Vec3f {
     pub x: f32,
     pub y: f32,
@@ -122,6 +120,7 @@ impl Sub for Vec3f {
     }
 }
 
+/*
 impl Decodable for Vec3f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
         d.read_seq(|d, _len| {
@@ -133,11 +132,12 @@ impl Decodable for Vec3f {
         })
     }
 }
+*/
 
 /**
  * 4x1 real vector type
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Vec4f {
     pub x: f32,
     pub y: f32,
@@ -217,6 +217,7 @@ impl Sub for Vec4f {
     }
 }
 
+/*
 impl Decodable for Vec4f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
         d.read_seq(|d, _len| {
@@ -229,11 +230,12 @@ impl Decodable for Vec4f {
         })
     }
 }
+*/
 
 /**
  * 4x4 Row Matrix
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Mat4f {
     pub r1: Vec4f,
     pub r2: Vec4f,
@@ -323,6 +325,7 @@ impl Mat4f {
     }
 }
 
+/*
 impl Decodable for Mat4f {
     fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
         d.read_struct("", 0, |d| {
@@ -347,6 +350,7 @@ impl Decodable for Mat4f {
         })
     }
 }
+*/
 
 #[cfg(test)]
 mod test {

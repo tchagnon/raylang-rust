@@ -1,13 +1,11 @@
 //! Scene module for reading scene config from toml
 
-use rustc_serialize::{Decoder, Decodable, DecoderHelpers};
-use rustc_serialize::json;
 use std::convert::AsRef;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
-use toml::{Parser, Value};
-use toml::Decoder as TomlDecoder;
+use serde_json;
+use toml;
 use image::ImageBuffer;
 
 use color::Color;
@@ -16,7 +14,7 @@ use mesh::{Mesh, Shading};
 use primitive::Primitive;
 use ray_tracer::{RayTracer, Ray, Intersection};
 
-#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Scene {
     pub image: String,
     pub width: u32,
@@ -35,17 +33,12 @@ impl Scene {
 
     #[allow(dead_code)]
     pub fn decode_toml(s: &str) -> Scene {
-        let mut parser = Parser::new(s);
-        let scene = parser.parse().unwrap_or_else(|| {
-            panic!("Unable to parse scene due to errors: {:?}", parser.errors)
-        });
-        let mut decoder = TomlDecoder::new(Value::Table(scene));
-        Decodable::decode(&mut decoder).expect("Unable to decode TOML")
+        toml::from_str(s).expect("Unable to parse Toml")
     }
 
     #[allow(dead_code)]
     pub fn decode_json(s: &str) -> Scene {
-        json::decode(s).expect("Unable to decode Scene JSON")
+        serde_json::from_str(s).expect("Unable to decode Scene JSON")
     }
 
     // Precompute, flatten and transform objects in the scene
@@ -95,7 +88,7 @@ impl Scene {
 
 }
 
-#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Camera {
     pub distance: f32,
     pub fov_angle: f32,
@@ -104,7 +97,7 @@ pub struct Camera {
     pub up: Vec3f,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
@@ -163,53 +156,14 @@ impl Default for ObjectTree {
     }
 }
 
-impl Decodable for ObjectTree {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_struct("", 0, |d| {
-            match try!(d.read_struct_field("type", 0, |d| {
-                Ok(try!(d.read_str()))
-            })).as_ref() {
-                "Group" => Ok(ObjectTree::Group(try!(d.read_struct_field("items", 0, |d| {
-                    d.read_to_vec(ObjectTree::decode)
-                })))),
-                "Mesh" => {
-                    let shading = try!(d.read_struct_field("shading", 0, |d| {
-                        match try!(d.read_str()).to_lowercase().as_ref() {
-                            "flat" => Ok(Shading::Flat),
-                            "smooth" => Ok(Shading::Smooth),
-                            s@_ => Err(d.error(&format!("unknown shading type {}", s))),
-                        }
-                    }));
-                    Ok(ObjectTree::Mesh(try!(d.read_struct_field("mesh", 0, |d| {
-                        let model_path = try!(d.read_str());
-                        Ok(Mesh::read(Path::new(&model_path), shading))
-                    }))))
-                },
-                "Primitive" => Ok(ObjectTree::Primitive(try!(Primitive::decode(d)))),
-                "Transform" => {
-                    let child = try!(d.read_struct_field("child", 0, ObjectTree::decode));
-                    let xform = try!(d.read_struct_field("transform", 0, Mat4f::decode));
-                    Ok(ObjectTree::Transform { child: Box::new(child), transform: xform })
-                },
-                "Material" => {
-                    let child = try!(d.read_struct_field("child", 0, ObjectTree::decode));
-                    let m = try!(d.read_struct_field("material", 0, Material::decode));
-                    Ok(ObjectTree::Material { child: Box::new(child), material: m })
-                },
-                t@_ => Err(d.error(&format!("unknown object type {}", t))),
-            }
-        })
-    }
-}
-
-#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Light {
     pub color: Color,
     pub intensity: f32,
     pub position: Vec3f,
 }
 
-#[derive(Debug, Clone, RustcDecodable, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Material {
     pub k_diffuse: f32,
     pub k_specular: f32,

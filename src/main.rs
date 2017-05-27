@@ -1,6 +1,10 @@
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate image;
 extern crate toml;
-extern crate rustc_serialize;
 
 use std::env;
 use std::fs::File;
