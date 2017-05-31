@@ -352,6 +352,28 @@ impl Decodable for Mat4f {
 }
 */
 
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+pub enum Transform {
+    Translate(Vec3f),
+    Rotate {
+        axis: Vec3f,
+        angle: f32,
+    },
+    Scale(Vec3f),
+    Affine(Mat4f),
+}
+
+impl Transform {
+    pub fn mat4f(&self) -> Mat4f {
+        match *self {
+            Transform::Translate(v) => Mat4f::translate(v),
+            Transform::Rotate { axis, angle } => Mat4f::rotate(axis, angle),
+            Transform::Scale(v) => Mat4f::scale(v),
+            Transform::Affine(m) => m,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

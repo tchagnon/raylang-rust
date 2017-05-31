@@ -3,6 +3,7 @@ use ray_tracer::{Ray, Intersection};
 use scene::Material;
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
+//#[serde(tag = "type")]
 pub enum Primitive {
     Sphere { radius: f32, center: Vec3f },
 }

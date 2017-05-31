@@ -5,15 +5,15 @@ image         = "scene0.png"
 width         = 512
 height        = 512
 subsamples    = 2
-background    = "black"
-ambient_light = "white"
+background    = "Black"
+ambient_light = "White"
 
 [default_material]
 k_diffuse = 0.7
 k_specular = 0.3
 k_ambient = 0.1
 n_shininess  = 30.0
-color = "white"
+color = "White"
 
 [camera]
 distance    = 5.0
@@ -23,14 +23,14 @@ direction   = [0.0, 0.0, -1.0]
 up          = [0.0, 1.0, 0.0]
 
 [[lights]]
-color       = "white"
+color       = "White"
 intensity   = 1.0
 position    = [4.0, 4.0, 9.0]
 
-[objects]
-type = "Group"
+#[[objects]]
+#type = "Group"
 
-[[objects.items]]
+[[[objects.Group.items]]]
 type = "Transform"
 transform = {type = "Translate", vector = [-1.0, 1.0, 0.0]}
 
@@ -58,7 +58,7 @@ type = "Material"
   k_specular  = 0.3
   k_ambient   = 0.1
   n_shininess = 30.0
-  color = "CornflowerBlue"
+  color = "Blue" #"CornflowerBlue"
 
   [objects.items.child]
   type = "Transform"

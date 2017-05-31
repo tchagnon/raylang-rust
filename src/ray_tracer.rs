@@ -20,11 +20,11 @@ impl<'a> RayTracer<'a> {
         for i in 0..subsamples {
             for j in 0..subsamples {
                 let (i, j) = (i as f32, j as f32);
-                v = v + self.trace_subpixel(x + i * step, y + j * step).vec3f;
+                v = v + self.trace_subpixel(x + i * step, y + j * step).vec3f();
             }
         }
         let avg_v = v.scale(1.0 / (subsamples * subsamples) as f32);
-        Color::new(avg_v)
+        Color::Rgb(avg_v)
     }
 
     pub fn trace_subpixel(&self, x: f32, y: f32) -> Color {
@@ -70,12 +70,12 @@ impl<'a> RayTracer<'a> {
             let reflection  = (normal.scale(normal.dot0(light_dir) * 2.0) - light_dir).norm();
             let diffuse     = material.k_diffuse * normal.dot0(light_dir);
             let specular    = material.k_specular * reflection.dot0(view).powf(material.n_shininess);
-            light.color.vec3f.scale(light.intensity * (diffuse + specular))
+            light.color.vec3f().scale(light.intensity * (diffuse + specular))
         };
 
-        let ambient = scene.ambient_light.vec3f.scale(material.k_ambient);
+        let ambient = scene.ambient_light.vec3f().scale(material.k_ambient);
         let light = scene.lights.iter().map(diff_spec).fold(ambient, |a, l| a + l);
-        Color::new(material.color.vec3f.point_mul(light))
+        Color::Rgb(material.color.vec3f().point_mul(light))
     }
 }
 

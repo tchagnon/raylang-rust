@@ -9,7 +9,7 @@ use toml;
 use image::ImageBuffer;
 
 use color::Color;
-use math::{Vec3f, Mat4f};
+use math::{Vec3f, Mat4f, Transform};
 use mesh::{Mesh, Shading};
 use primitive::Primitive;
 use ray_tracer::{RayTracer, Ray, Intersection};
@@ -101,10 +101,14 @@ pub struct Camera {
 pub enum ObjectTree {
     Group(Vec<ObjectTree>),
     Mesh(Mesh),
+    LoadMesh {
+        file: String,
+        shading: Shading,
+    },
     Primitive(Primitive),
     Transform {
         child: Box<ObjectTree>,
-        transform: Mat4f,
+        transform: Transform,
     },
     Material {
         child: Box<ObjectTree>,
@@ -119,10 +123,13 @@ impl ObjectTree {
                 ObjectTree::Group(objs.iter().map({ |o| o.prepare(t, origin) }).collect())
             },
             ObjectTree::Transform { ref child, ref transform } => {
-                let new_t = t.mm_multiply(transform);
+                let new_t = t.mm_multiply(&transform.mat4f());
                 child.prepare(&new_t, origin)
             },
             ObjectTree::Primitive(ref p) => ObjectTree::Primitive(p.transform(t)),
+            ObjectTree::LoadMesh { ref file, shading } => {
+                ObjectTree::Mesh(Mesh::read(Path::new(file), shading)).prepare(t, origin)
+            }
             ObjectTree::Mesh(ref m) => ObjectTree::Mesh(m.transform(t, origin)),
             ObjectTree::Material { ref child, ref material } => {
                 ObjectTree::Material {
@@ -139,13 +146,14 @@ impl ObjectTree {
                 objs.iter().flat_map({ |o| o.intersect(ray, material).into_iter() }).collect()
             },
             ObjectTree::Transform { ref child, ref transform } => {
-                child.intersect(ray.transform(transform), material)
+                child.intersect(ray.transform(&transform.mat4f()), material)
             },
             ObjectTree::Primitive(ref p) => p.intersect(ray, material),
             ObjectTree::Mesh(ref m) => m.intersect(ray, material),
             ObjectTree::Material { ref child, ref material } => {
                 child.intersect(ray, material)
             },
+            _ => 
         }
     }
 }

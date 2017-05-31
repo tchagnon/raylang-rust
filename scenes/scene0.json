@@ -1,0 +1,88 @@
+{
+  "threads"       : 4,
+  "image"         : "scene0.png",
+  "width"         : 512,
+  "height"        : 512,
+  "subsamples"    : 2,
+  "background"    : "Black",
+  "ambient_light" : "White",
+  "default_material": {
+    "k_diffuse"   : 0.7,
+    "k_specular"  : 0.3,
+    "k_ambient"   : 0.1,
+    "n_shininess" : 30.0,
+    "color"       : "White"
+  },
+  "camera": {
+    "distance"    : 5.0,
+    "fov_angle"   : 45.0,
+    "location"    : [0.0, 0.0, 5.0],
+    "direction"   : [0.0, 0.0, -1.0],
+    "up"          : [0.0, 1.0, 0.0]
+  },
+  "lights": [
+    {
+      "color"       : "White",
+      "intensity"   : 1.0,
+      "position"    : [4.0, 4.0, 9.0]
+    }
+  ],
+  "objects": {
+    "Group": [
+      {
+        "Transform": {
+          "transform": {
+            "Translate": [-1.0, 1.0, 0.0]
+          },
+          "child": {
+            "Primitive": {
+              "Sphere": {
+                "radius": 0.4,
+                "center": [0.0, 0.0, 0.0]
+              }
+            }
+          }
+        }
+      },
+      {
+        "Transform": {
+          "transform": {
+            "Translate": [1.0, 1.0, 0.0]
+          },
+          "child": {
+            "Primitive": {
+              "Sphere": {
+                "radius": 0.4,
+                "center": [0.0, 0.0, 0.0]
+              }
+            }
+          }
+        }
+      },
+      {
+        "Material": {
+          "material": {
+            "k_diffuse"   : 0.7,
+            "k_specular"  : 0.3,
+            "k_ambient"   : 0.1,
+            "n_shininess" : 30.0,
+            "color" : "Blue"
+          },
+          "child": {
+            "Transform": {
+              "transform": {
+                "Translate": [0.0, -0.3, 2.5]
+              },
+              "child": {
+                "LoadMesh": {
+                  "file": "models/icos.smf",
+                  "shading": "Smooth"
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

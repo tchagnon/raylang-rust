@@ -33,7 +33,7 @@ fn main() {
     let mut toml = String::new();
     toml_file.read_to_string(&mut toml).unwrap();
 
-    let scene = Scene::decode_toml(&toml).prepare();
+    let scene = Scene::decode_json(&toml).prepare();
 
     scene.render();
     println!("Wrote file {:?}", scene.image);
