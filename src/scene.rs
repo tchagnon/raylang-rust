@@ -4,6 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::thread;
 use serde_json;
+use serde_yaml;
 use image::ImageBuffer;
 
 use color::Color;
@@ -31,6 +32,10 @@ impl Scene {
 
     pub fn decode_json(s: &str) -> Scene {
         serde_json::from_str(s).expect("Unable to decode Scene JSON")
+    }
+
+    pub fn decode_yaml(s: &str) -> Scene {
+        serde_yaml::from_str(s).expect("Unable to decode Scene JSON")
     }
 
     // Precompute, flatten and transform objects in the scene

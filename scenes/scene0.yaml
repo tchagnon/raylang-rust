@@ -1,0 +1,62 @@
+# Scene with Bunny mesh and two spheres
+
+threads: 4
+image: scene0.png
+width: 512
+height: 512
+subsamples: 2
+background: Black
+ambient_light: White
+
+default_material:
+  k_diffuse: 0.7
+  k_specular: 0.3
+  k_ambient: 0.1
+  n_shininess: 30.0
+  color: White
+
+camera:
+  distance: 5.0
+  fov_angle: 45.0
+  location: [0.0, 0.0, 5.0]
+  direction: [0.0, 0.0, -1.0]
+  up: [0.0, 1.0, 0.0]
+
+lights:
+- color: White
+  intensity: 1.0
+  position: [4.0, 4.0, 9.0]
+
+objects:
+  Group:
+  - Transform:
+      transform:
+        Translate: [-1.0, 1.0, 0.0]
+      child:
+        Primitive:
+          Sphere:
+            center: [0.0, 0.0, 0.0]
+            radius: 0.4
+  - Transform:
+      transform:
+        Translate: [1.0, 1.0, 0.0]
+      child:
+        Primitive:
+          Sphere:
+            center: [0.0, 0.0, 0.0]
+            radius: 0.4
+  - Material:
+      child:
+        Transform:
+          transform:
+            Translate: [0.0, -0.3, 2.5]
+          child:
+            LoadMesh:
+              file: models/bound-bunny_5k.smf
+              shading: Smooth
+      material:
+        k_diffuse: 0.7
+        k_specular: 0.3
+        k_ambient: 0.1
+        n_shininess: 30.0
+        color: CornflowerBlue
