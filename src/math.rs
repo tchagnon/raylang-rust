@@ -120,20 +120,6 @@ impl Sub for Vec3f {
     }
 }
 
-/*
-impl Decodable for Vec3f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, _len| {
-            Ok(Vec3f {
-                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
-                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
-                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
-            })
-        })
-    }
-}
-*/
-
 /**
  * 4x1 real vector type
  */
@@ -216,21 +202,6 @@ impl Sub for Vec4f {
         }
     }
 }
-
-/*
-impl Decodable for Vec4f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, _len| {
-            Ok(Vec4f {
-                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
-                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
-                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
-                w: try!(d.read_seq_elt(3, |d| Decodable::decode(d))),
-            })
-        })
-    }
-}
-*/
 
 /**
  * 4x4 Row Matrix
@@ -324,33 +295,6 @@ impl Mat4f {
         Vec3f::new(self.r1.dot3(v), self.r2.dot3(v), self.r3.dot3(v))
     }
 }
-
-/*
-impl Decodable for Mat4f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_struct("", 0, |d| {
-            match try!(d.read_struct_field("type", 0, |d| {
-                Ok(try!(d.read_str()))
-            })).as_ref() {
-                "Translate" => {
-                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::translate(vec))
-                },
-                "Rotate" => {
-                    let deg = try!(d.read_struct_field("degrees", 0, |d| { d.read_f32() }));
-                    let axis = try!(d.read_struct_field("axis", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::rotate(axis, deg))
-                },
-                "Scale" => {
-                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::scale(vec))
-                },
-                t@_ => Err(d.error(&format!("unknown transform {}", t))),
-            }
-        })
-    }
-}
-*/
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
 pub enum Transform {

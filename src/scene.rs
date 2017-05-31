@@ -1,6 +1,5 @@
 //! Scene module for reading scene config from toml
 
-use std::convert::AsRef;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
@@ -153,7 +152,7 @@ impl ObjectTree {
             ObjectTree::Material { ref child, ref material } => {
                 child.intersect(ray, material)
             },
-            _ => 
+            _ => vec![]
         }
     }
 }

@@ -3,7 +3,6 @@ use ray_tracer::{Ray, Intersection};
 use scene::Material;
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
-//#[serde(tag = "type")]
 pub enum Primitive {
     Sphere { radius: f32, center: Vec3f },
 }
@@ -22,7 +21,8 @@ impl Primitive {
 
     pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         match *self {
-            Primitive::Sphere { radius, center } => Primitive::intersect_sphere(radius, center, ray, material),
+            Primitive::Sphere { radius, center } =>
+                Primitive::intersect_sphere(radius, center, ray, material),
         }
     }
 
