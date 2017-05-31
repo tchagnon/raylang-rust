@@ -1,6 +1,10 @@
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
 extern crate image;
 extern crate toml;
-extern crate rustc_serialize;
 
 use std::env;
 use std::fs::File;
@@ -29,7 +33,7 @@ fn main() {
     let mut toml = String::new();
     toml_file.read_to_string(&mut toml).unwrap();
 
-    let scene = Scene::decode_toml(&toml).prepare();
+    let scene = Scene::decode_json(&toml).prepare();
 
     scene.render();
     println!("Wrote file {:?}", scene.image);

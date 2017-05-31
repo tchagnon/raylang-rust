@@ -3,8 +3,6 @@
 
 use std::f32::consts;
 use std::ops::{Add, Sub};
-use rustc_serialize::Decoder;
-use rustc_serialize::Decodable;
 
 /// Degrees to radians
 pub fn to_radians(x: f32) -> f32 {
@@ -24,7 +22,7 @@ impl Clamp for f32 {
 /**
  * 3x1 real vector type
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Vec3f {
     pub x: f32,
     pub y: f32,
@@ -122,22 +120,10 @@ impl Sub for Vec3f {
     }
 }
 
-impl Decodable for Vec3f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, _len| {
-            Ok(Vec3f {
-                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
-                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
-                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
-            })
-        })
-    }
-}
-
 /**
  * 4x1 real vector type
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Vec4f {
     pub x: f32,
     pub y: f32,
@@ -217,23 +203,10 @@ impl Sub for Vec4f {
     }
 }
 
-impl Decodable for Vec4f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_seq(|d, _len| {
-            Ok(Vec4f {
-                x: try!(d.read_seq_elt(0, |d| Decodable::decode(d))),
-                y: try!(d.read_seq_elt(1, |d| Decodable::decode(d))),
-                z: try!(d.read_seq_elt(2, |d| Decodable::decode(d))),
-                w: try!(d.read_seq_elt(3, |d| Decodable::decode(d))),
-            })
-        })
-    }
-}
-
 /**
  * 4x4 Row Matrix
  */
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq)]
 pub struct Mat4f {
     pub r1: Vec4f,
     pub r2: Vec4f,
@@ -323,28 +296,25 @@ impl Mat4f {
     }
 }
 
-impl Decodable for Mat4f {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        d.read_struct("", 0, |d| {
-            match try!(d.read_struct_field("type", 0, |d| {
-                Ok(try!(d.read_str()))
-            })).as_ref() {
-                "Translate" => {
-                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::translate(vec))
-                },
-                "Rotate" => {
-                    let deg = try!(d.read_struct_field("degrees", 0, |d| { d.read_f32() }));
-                    let axis = try!(d.read_struct_field("axis", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::rotate(axis, deg))
-                },
-                "Scale" => {
-                    let vec = try!(d.read_struct_field("vector", 0, |d| { Vec3f::decode(d) }));
-                    Ok(Mat4f::scale(vec))
-                },
-                t@_ => Err(d.error(&format!("unknown transform {}", t))),
-            }
-        })
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
+pub enum Transform {
+    Translate(Vec3f),
+    Rotate {
+        axis: Vec3f,
+        angle: f32,
+    },
+    Scale(Vec3f),
+    Affine(Mat4f),
+}
+
+impl Transform {
+    pub fn mat4f(&self) -> Mat4f {
+        match *self {
+            Transform::Translate(v) => Mat4f::translate(v),
+            Transform::Rotate { axis, angle } => Mat4f::rotate(axis, angle),
+            Transform::Scale(v) => Mat4f::scale(v),
+            Transform::Affine(m) => m,
+        }
     }
 }
 

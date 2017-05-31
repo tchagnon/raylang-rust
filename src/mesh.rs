@@ -9,7 +9,7 @@ use math::{Vec3f, Mat4f};
 use ray_tracer::{Ray, Intersection};
 use scene::Material;
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Face {
     ai: usize,
     bi: usize,
@@ -99,13 +99,13 @@ impl Face {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
 pub enum Shading {
     Smooth,
     Flat,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub struct Mesh {
     pub faces: Vec<Face>,
     pub vertices: Vec<Vec3f>,

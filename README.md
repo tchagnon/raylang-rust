@@ -30,13 +30,13 @@ wget -r -np -nd -A smf https://www.cs.drexel.edu/~david/Classes/CS586/Models/
 
 ```
 cargo build --release
-cargo run scenes/scene0.toml --release
+cargo run scenes/scene0.json --release
 ```
 
 Running without `--release` will take significantly longer due to the lack of
 optimization.
 
-Output image will be written to the file specified in the `scene0.toml` file.
+Output image will be written to the file specified in the `scene0.json` file.
 
 ```
 Wrote file "scene0.png"
@@ -45,7 +45,7 @@ Wrote file "scene0.png"
 ![rendered image 0](doc/scene0.png)
 
 As of 0.2.0, scenes can also be written in Python by constructing a data
-structure similar to the toml input and passing it to a `render` function.  This
+structure similar to the json input and passing it to a `render` function.  This
 uses the scene data structure, ray tracer C library, and Python utility
 functions as a small embedded domain-specific language (EDSL) and has the
 advantage of being able to generate parts of the scene programmatically.

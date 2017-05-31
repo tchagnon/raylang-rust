@@ -1,11 +1,8 @@
-use rustc_serialize::Decoder;
-use rustc_serialize::Decodable;
-
 use math::{Vec3f, Mat4f};
 use ray_tracer::{Ray, Intersection};
 use scene::Material;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub enum Primitive {
     Sphere { radius: f32, center: Vec3f },
 }
@@ -24,7 +21,8 @@ impl Primitive {
 
     pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         match *self {
-            Primitive::Sphere { radius, center } => Primitive::intersect_sphere(radius, center, ray, material),
+            Primitive::Sphere { radius, center } =>
+                Primitive::intersect_sphere(radius, center, ray, material),
         }
     }
 
@@ -51,21 +49,6 @@ impl Primitive {
         } else {
             vec![Intersection::new(t0, normal(t0), material),
                  Intersection::new(t1, normal(t1), material)]
-        }
-    }
-}
-
-impl Decodable for Primitive {
-    fn decode<D: Decoder>(d: &mut D) -> Result<Self, D::Error> {
-        match try!(d.read_struct_field("primitive", 0, |d| {
-            Ok(try!(d.read_str()))
-        })).as_ref() {
-            "Sphere" => {
-                let radius = try!(d.read_struct_field("radius", 0, |d| { d.read_f32() }));
-                let center = try!(d.read_struct_field("center", 0, |d| { Vec3f::decode(d) }));
-                Ok(Primitive::Sphere { radius: radius, center: center })
-            },
-            t@_ => Err(d.error(&format!("unknown primitive {}", t))),
         }
     }
 }
