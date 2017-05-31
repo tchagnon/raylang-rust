@@ -1,10 +1,9 @@
-//! Scene module for reading scene config from toml
+//! Scene module for reading scene config from json
 
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
 use serde_json;
-use toml;
 use image::ImageBuffer;
 
 use color::Color;
@@ -30,12 +29,6 @@ pub struct Scene {
 
 impl Scene {
 
-    #[allow(dead_code)]
-    pub fn decode_toml(s: &str) -> Scene {
-        toml::from_str(s).expect("Unable to parse Toml")
-    }
-
-    #[allow(dead_code)]
     pub fn decode_json(s: &str) -> Scene {
         serde_json::from_str(s).expect("Unable to decode Scene JSON")
     }

@@ -4,7 +4,6 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate image;
-extern crate toml;
 extern crate libc;
 
 mod color;
