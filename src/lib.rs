@@ -6,6 +6,7 @@ extern crate serde_json;
 extern crate serde_yaml;
 extern crate image;
 extern crate libc;
+extern crate time;
 
 mod color;
 mod math;

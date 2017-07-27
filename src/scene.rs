@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
+use time::precise_time_s;
 use serde_json;
 use serde_yaml;
 use image::ImageBuffer;
@@ -42,8 +43,10 @@ impl Scene {
 
     // Precompute, flatten and transform objects in the scene
     pub fn prepare(&self) -> Scene {
+        let t0 = precise_time_s();
         let new_objects = self.objects.prepare(&Mat4f::identity(), &self.camera.location);
         let dissected_objects = new_objects.construct_bvh(self.bbox_limit);
+        println!("Prepare time {:.2}s", precise_time_s() - t0);
         Scene {
             objects: dissected_objects,
             .. self.clone()
@@ -51,6 +54,7 @@ impl Scene {
     }
 
     pub fn render(&self) {
+        let t0 = precise_time_s();
         let scene = Arc::new(self.clone());
 
         let threads = scene.threads;
@@ -84,6 +88,7 @@ impl Scene {
 
         let fout = Path::new(&scene.image);
         let _ = imgbuf.save(fout);
+        println!("Render time {:.2}s", precise_time_s() - t0);
     }
 
 }

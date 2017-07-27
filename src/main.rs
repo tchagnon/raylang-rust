@@ -5,6 +5,7 @@ extern crate serde_json;
 extern crate serde_yaml;
 
 extern crate image;
+extern crate time;
 
 use std::env;
 use std::fs::File;
