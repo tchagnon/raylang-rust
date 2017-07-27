@@ -19,7 +19,7 @@ impl BoundingBox {
         let (t1y, t2y) = get_t1_t2(ray.origin.y, ray.direction.y, self.min.y, self.max.y);
         let (t1z, t2z) = get_t1_t2(ray.origin.z, ray.direction.z, self.min.z, self.max.z);
         let t_near = t1x.max(t1y.max(t1z));
-        let t_far  = t2x.max(t2y.max(t2z));
+        let t_far  = t2x.min(t2y.min(t2z));
         if (t_near > t_far) || t_far < 0.0 {
             false
         } else {
