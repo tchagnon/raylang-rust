@@ -1,6 +1,7 @@
 use math::{Vec3f, Mat4f};
 use ray_tracer::{Ray, Intersection};
 use scene::Material;
+use bounding_box::BoundingBox;
 
 #[derive(Debug, Clone, Deserialize, PartialEq)]
 pub enum Primitive {
@@ -51,4 +52,17 @@ impl Primitive {
                  Intersection::new(t1, normal(t1), material)]
         }
     }
+
+    pub fn bounding_box(&self) -> BoundingBox {
+        match *self {
+            Primitive::Sphere { radius, center } => {
+                let r = Vec3f::new(radius, radius, radius);
+                BoundingBox {
+                    min: center - r,
+                    max: center + r,
+                }
+            }
+        }
+    }
+
 }

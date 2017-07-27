@@ -38,6 +38,18 @@ impl Vec3f {
         Vec3f::new(0.0, 0.0, 0.0)
     }
 
+    pub fn get_x(&self) -> f32 {
+        self.x
+    }
+
+    pub fn get_y(&self) -> f32 {
+        self.y
+    }
+
+    pub fn get_z(&self) -> f32 {
+        self.z
+    }
+
     pub fn dot(&self, rhs: Vec3f) -> f32 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }

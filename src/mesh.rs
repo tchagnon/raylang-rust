@@ -1,5 +1,7 @@
 //! Mesh module for reading and representing mesh objects
 
+use std::cmp::Ordering::Equal;
+use std::collections::HashSet;
 use std::str::FromStr;
 use std::fs::File;
 use std::io::BufReader;
@@ -7,7 +9,8 @@ use std::io::prelude::*;
 use std::path::Path;
 use math::{Vec3f, Mat4f};
 use ray_tracer::{Ray, Intersection};
-use scene::Material;
+use scene::{Material, ObjectTree};
+use bounding_box::BoundingBox;
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Face {
@@ -175,5 +178,38 @@ impl Mesh {
         self.faces.iter()
             .filter_map(|f| f.intersect(ray, material, self))
             .collect()
+    }
+
+    pub fn dissect(&self, face_limit: u32) -> ObjectTree {
+        let idxs: HashSet<usize> = self.faces.iter()
+            .flat_map(|f| vec![f.ai, f.bi, f.ci])
+            .collect();
+        let vertices: Vec<Vec3f> = idxs.iter().map(|&i| self.vertices[i]).collect();
+        let bbox = BoundingBox::from_vertices(&vertices);
+
+        if self.faces.len() <= face_limit as usize {
+            ObjectTree::BoundingBox {
+                child: Box::new(ObjectTree::Mesh(self.clone())),
+                bbox: bbox,
+            }
+        } else {
+            let dimension = match bbox.max - bbox.min {
+                v if v.x > v.y && v.x > v.z => Vec3f::get_x,
+                v if v.y > v.x && v.y > v.z => Vec3f::get_y,
+                _ => Vec3f::get_z,
+            };
+            let face_dim = |f: &Face| dimension(&self.vertices[f.ai]);
+            let mut sorted_faces = self.faces.clone();
+            sorted_faces.sort_by(|a, b| {
+                face_dim(a).partial_cmp(&face_dim(b)).unwrap_or(Equal)
+            });
+            let (f1, f2) = sorted_faces.split_at(sorted_faces.len() / 2);
+            let m1 = Mesh {faces: f1.to_vec(), .. self.clone()}.dissect(face_limit);
+            let m2 = Mesh {faces: f2.to_vec(), .. self.clone()}.dissect(face_limit);
+            ObjectTree::BoundingBox {
+                child: Box::new(ObjectTree::Group(vec![m1, m2])),
+                bbox: bbox,
+            }
+        }
     }
 }

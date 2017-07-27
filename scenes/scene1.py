@@ -60,6 +60,7 @@ scene = {
     'width'        : 512,
     'height'       : 512,
     'subsamples'   : 2,
+    'bbox_limit'   : 64,
     'background'   : 'Black',
     'ambient_light': 'White',
 

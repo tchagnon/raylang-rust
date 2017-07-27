@@ -12,6 +12,7 @@ use math::{Vec3f, Mat4f, Transform};
 use mesh::{Mesh, Shading};
 use primitive::Primitive;
 use ray_tracer::{RayTracer, Ray, Intersection};
+use bounding_box::BoundingBox;
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq)]
 pub struct Scene {
@@ -20,6 +21,7 @@ pub struct Scene {
     pub height: u32,
     pub threads: u32,
     pub subsamples: u32,
+    pub bbox_limit: u32,
     pub background: Color,
     pub camera: Camera,
     pub objects: ObjectTree,
@@ -41,8 +43,9 @@ impl Scene {
     // Precompute, flatten and transform objects in the scene
     pub fn prepare(&self) -> Scene {
         let new_objects = self.objects.prepare(&Mat4f::identity(), &self.camera.location);
+        let dissected_objects = new_objects.construct_bvh(self.bbox_limit);
         Scene {
-            objects: new_objects,
+            objects: dissected_objects,
             .. self.clone()
         }
     }
@@ -111,6 +114,10 @@ pub enum ObjectTree {
         child: Box<ObjectTree>,
         material: Material,
     },
+    BoundingBox {
+        child: Box<ObjectTree>,
+        bbox: BoundingBox,
+    },
 }
 
 impl ObjectTree {
@@ -134,6 +141,43 @@ impl ObjectTree {
                     material: material.clone(),
                 }
             },
+            ObjectTree::BoundingBox { ref child, ref bbox } => {
+                ObjectTree::BoundingBox {
+                    child: Box::new(child.prepare(t, origin)),
+                    bbox: bbox.clone(),
+                }
+            },
+        }
+    }
+
+    pub fn construct_bvh(&self, bbox_limit: u32) -> ObjectTree {
+        match *self {
+            ObjectTree::Group(ref objs) => {
+                ObjectTree::Group(objs.iter().map({ |o| o.construct_bvh(bbox_limit) }).collect())
+            },
+            ObjectTree::Transform { ref child, ref transform } => {
+                ObjectTree::Transform {
+                    child: Box::new(child.construct_bvh(bbox_limit)),
+                    transform: transform.clone(),
+                }
+            },
+            ObjectTree::Primitive(ref p) => {
+                ObjectTree::BoundingBox {
+                    child: Box::new(self.clone()),
+                    bbox: p.bounding_box(),
+                }
+            },
+            ObjectTree::Mesh(ref m) => m.dissect(bbox_limit),
+            ObjectTree::Material { ref child, ref material } => {
+                ObjectTree::Material {
+                    child: Box::new(child.construct_bvh(bbox_limit)),
+                    material: material.clone(),
+                }
+            },
+            ObjectTree::BoundingBox { .. } => {
+                self.clone()
+            },
+            _ => ObjectTree::default()
         }
     }
 
@@ -149,6 +193,13 @@ impl ObjectTree {
             ObjectTree::Mesh(ref m) => m.intersect(ray, material),
             ObjectTree::Material { ref child, ref material } => {
                 child.intersect(ray, material)
+            },
+            ObjectTree::BoundingBox { ref child, ref bbox } => {
+                if bbox.intersect(ray) {
+                    child.intersect(ray, material)
+                } else {
+                    vec![]
+                }
             },
             _ => vec![]
         }

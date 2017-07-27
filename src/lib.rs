@@ -12,6 +12,7 @@ mod math;
 mod mesh;
 mod primitive;
 mod ray_tracer;
+mod bounding_box;
 mod scene;
 
 use libc::c_char;
