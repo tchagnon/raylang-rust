@@ -62,4 +62,4 @@ Tagged versions correspond to assignments. For example, 0.1.0 implements the
 requirements for assignment 1.  `master` may contain a partially completed next
 version at any time.
 
-The current version is: `0.2.0`
+The current version is: `0.3.0`
