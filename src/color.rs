@@ -2,7 +2,6 @@
 
 use image::Rgb;
 use math::Vec3f;
-use math::Clamp;
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
 pub enum Color {

@@ -377,21 +377,21 @@ mod test {
     fn test_mat4f() {
         let mat4f = Mat4f::new;
         let vec4f = Vec4f::new;
-        let A = mat4f(
+        let a = mat4f(
             vec4f(1.0, 2.0, 3.0, 4.0),
             vec4f(5.0, 6.0, 7.0, 8.0),
             vec4f(9.0, 10.0, 11.0, 12.0),
             vec4f(13.0, 14.0, 15.0, 16.0));
-        let B = mat4f(
+        let b = mat4f(
             vec4f(17.0, 18.0, 19.0, 20.0),
             vec4f(21.0, 22.0, 23.0, 24.0),
             vec4f(25.0, 26.0, 27.0, 28.0),
             vec4f(29.0, 30.0, 31.0, 23.0));
-        let C = mat4f(
+        let c = mat4f(
             vec4f(250.0, 260.0, 270.0, 244.0),
             vec4f(618.0, 644.0, 670.0, 624.0),
             vec4f(986.0, 1028.0, 1070.0, 1004.0),
             vec4f(1354.0, 1412.0, 1470.0, 1384.0));
-        assert_eq!(A.mm_multiply(&B), C);
+        assert_eq!(a.mm_multiply(&b), c);
     }
 }

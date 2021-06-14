@@ -2,13 +2,13 @@ from ctypes import *
 import json
 import platform
 
-extension = {
-  'Darwin': '.dylib',
-  'Linux': '.so',
-  'Windows': '.dll'
+libname = {
+  'Darwin': 'libraylangrust.dylib',
+  'Linux': 'libraylangrust.so',
+  'Windows': 'raylangrust.dll'
 }[platform.system()]
 
-lib = cdll.LoadLibrary('target/release/libraylangrust' + extension)
+lib = cdll.LoadLibrary('target/release/' + libname)
 
 lib.decode_json_scene.argtypes = [c_char_p]
 lib.decode_json_scene.restype = c_void_p

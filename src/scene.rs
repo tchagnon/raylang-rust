@@ -129,7 +129,7 @@ impl ObjectTree {
     pub fn prepare(&self, t: &Mat4f, origin: &Vec3f) -> ObjectTree {
         match *self {
             ObjectTree::Group(ref objs) => {
-                ObjectTree::Group(objs.iter().map({ |o| o.prepare(t, origin) }).collect())
+                ObjectTree::Group(objs.iter().map(|o| o.prepare(t, origin)).collect())
             },
             ObjectTree::Transform { ref child, ref transform } => {
                 let new_t = t.mm_multiply(&transform.mat4f());
@@ -158,7 +158,7 @@ impl ObjectTree {
     pub fn construct_bvh(&self, bbox_limit: u32) -> ObjectTree {
         match *self {
             ObjectTree::Group(ref objs) => {
-                ObjectTree::Group(objs.iter().map({ |o| o.construct_bvh(bbox_limit) }).collect())
+                ObjectTree::Group(objs.iter().map(|o| o.construct_bvh(bbox_limit)).collect())
             },
             ObjectTree::Transform { ref child, ref transform } => {
                 ObjectTree::Transform {
@@ -189,7 +189,7 @@ impl ObjectTree {
     pub fn intersect(&self, ray: Ray, material: &Material) -> Vec<Intersection> {
         match *self {
             ObjectTree::Group(ref objs) => {
-                objs.iter().flat_map({ |o| o.intersect(ray, material).into_iter() }).collect()
+                objs.iter().flat_map(|o| o.intersect(ray, material).into_iter()).collect()
             },
             ObjectTree::Transform { ref child, ref transform } => {
                 child.intersect(ray.transform(&transform.mat4f()), material)
