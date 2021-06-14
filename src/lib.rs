@@ -21,7 +21,7 @@ use std::ffi::CStr;
 use scene::Scene;
 
 #[no_mangle]
-pub extern fn decode_json_scene(json: *const c_char) -> *const Scene {
+pub extern "C" fn decode_json_scene(json: *const c_char) -> *const Scene {
     unsafe {
         let json_str = CStr::from_ptr(json).to_str()
             .expect("Error converting json to str");
@@ -33,7 +33,7 @@ pub extern fn decode_json_scene(json: *const c_char) -> *const Scene {
 }
 
 #[no_mangle]
-pub extern fn render(scene: *const Scene) {
+pub extern "C" fn render(scene: *const Scene) {
     unsafe {
         (*scene).render();
         println!("Wrote file {:?}", (*scene).image);

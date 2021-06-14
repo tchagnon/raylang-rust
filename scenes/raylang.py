@@ -18,7 +18,7 @@ lib.render.restype = None
 
 def render(scene):
   scene_json = json.dumps(scene)
-  scene_ptr = lib.decode_json_scene(scene_json)
+  scene_ptr = lib.decode_json_scene(scene_json.encode())
   lib.render(scene_ptr)
 
 def translate(vector, child):
