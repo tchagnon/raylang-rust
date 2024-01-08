@@ -6,8 +6,8 @@ Based on [David Breen][david]'s [CS636 Class][cs636] assignments and my own
 previous Haskell implementation [cs636-raytracer][cs636-raytracer].
 
 [cs636-raytracer]: https://github.com/tchagnon/cs636-raytracer
-[david]: https://www.cs.drexel.edu/~david/
-[cs636]: https://www.cs.drexel.edu/~david/Classes/CS431/index_Spring09.html
+[david]: https://www.cs.drexel.edu/~deb39/
+[cs636]: https://www.cs.drexel.edu/~deb39/Classes/CS431/index_Spring09.html
 
 ## Why?
 
@@ -18,12 +18,12 @@ computational program.  Rust in this case.
 
 To run the examples, you need some `.smf` model files in the `models/`
 directory.  The example model files are originally from
-https://www.cs.drexel.edu/~david/Classes/CS586/Models/
+https://www.cs.drexel.edu/~deb39/Classes/CS586/Models/
 
 Use the following command to download them all:
 
 ```
-wget -r -np -nd -A smf https://www.cs.drexel.edu/~david/Classes/CS586/Models/
+wget -r -np -nd -A smf https://www.cs.drexel.edu/~deb39/Classes/CS586/Models/
 ```
 
 ## Building and Running
